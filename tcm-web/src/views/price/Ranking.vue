@@ -46,7 +46,10 @@ const flatCount = ref(0)
 interface RankingItem {
   herbId: number
   herbName: string
+  changeRate: number
   change: number
+  currentPrice: number
+  trend: string
 }
 
 let upList = ref<RankingItem[]>([])
@@ -176,11 +179,15 @@ async function fetchData() {
   try {
     const res = (await getRanking({ type: periodType.value })) as any
     const list = res?.list || res?.data || (Array.isArray(res) ? res : [])
-    upList.value = list.filter((i: RankingItem) => i.change > 0).sort((a: RankingItem, b: RankingItem) => b.change - a.change)
-    downList.value = list.filter((i: RankingItem) => i.change < 0).sort((a: RankingItem, b: RankingItem) => a.change - b.change)
+    const mappedList = list.map((i: RankingItem) => ({
+      ...i,
+      change: i.changeRate ?? i.change ?? 0,
+    }))
+    upList.value = mappedList.filter((i: any) => i.change > 0).sort((a: any, b: any) => b.change - a.change)
+    downList.value = mappedList.filter((i: any) => i.change < 0).sort((a: any, b: any) => a.change - b.change)
     upCount.value = upList.value.length
     downCount.value = downList.value.length
-    flatCount.value = list.filter((i: RankingItem) => i.change === 0).length
+    flatCount.value = mappedList.filter((i: any) => i.change === 0).length
   } catch {
     upList.value = []
     downList.value = []

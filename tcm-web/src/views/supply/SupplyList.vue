@@ -58,8 +58,8 @@
       >
         <div class="card-header">
           <span class="herb-name">{{ item.herbName }}</span>
-          <el-tag size="small" :type="item.priceType === '电议' ? 'warning' : 'success'">
-            {{ item.priceType }}
+          <el-tag size="small" :type="getPriceTypeTag(item.priceType)">
+            {{ getPriceTypeLabel(item.priceType) }}
           </el-tag>
         </div>
         <div class="card-body">
@@ -77,14 +77,18 @@
           </div>
           <div class="info-row">
             <span class="label">价格：</span>
-            <span v-if="item.priceType === '明码'" class="price-value">
+            <span v-if="getPriceTypeLabel(item.priceType) === '明码'" class="price-value">
               ¥{{ item.price }}/{{ item.unit }}
             </span>
             <span v-else class="price-negotiable">电议</span>
           </div>
+          <div v-if="item.description" class="info-row">
+            <span class="label">说明：</span>
+            <span>{{ item.description }}</span>
+          </div>
         </div>
         <div class="card-footer">
-          <span class="publish-time">{{ item.publishTime }}</span>
+          <span class="publish-time">{{ item.createdAt || item.publishTime }}</span>
           <span v-if="userStore.token" class="contact-info">
             <el-icon><Phone /></el-icon>
             {{ item.contactPhone }}
@@ -126,9 +130,12 @@ interface SupplyItem {
   origin: string
   quantity: number
   unit: string
-  priceType: '明码' | '电议'
+  priceType: number | string
   price: number | null
+  contactName: string
   contactPhone: string
+  description: string
+  createdAt: string
   publishTime: string
 }
 
@@ -189,6 +196,17 @@ function resetFilters() {
 
 function goLogin() {
   router.push('/login')
+}
+
+function getPriceTypeLabel(priceType: number | string): string {
+  if (priceType === 1 || priceType === '1') return '明码'
+  if (priceType === 2 || priceType === '2') return '电议'
+  return String(priceType)
+}
+
+function getPriceTypeTag(priceType: number | string): string {
+  if (priceType === 2 || priceType === '2') return 'warning'
+  return 'success'
 }
 
 onMounted(() => {

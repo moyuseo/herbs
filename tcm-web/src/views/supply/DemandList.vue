@@ -123,6 +123,9 @@ interface DemandItem {
   quoteCount: number
   remainingDays: number
   publishTime: string
+  createdAt: string
+  expireAt: string
+  description: string
 }
 
 const loading = ref(false)
@@ -152,7 +155,12 @@ async function fetchList() {
       keyword: filters.keyword || undefined,
       spec: filters.spec || undefined,
     })
-    demandList.value = res.list || []
+    const list = res.list || []
+    demandList.value = list.map((item: any) => ({
+      ...item,
+      remainingDays: item.remainingDays ?? calcRemainingDays(item.expireAt),
+      publishTime: item.publishTime || item.createdAt,
+    }))
     pagination.total = res.total || 0
   } catch {
     demandList.value = []
@@ -180,6 +188,13 @@ function handleQuote(item: DemandItem) {
     return
   }
   ElMessage.success('报价功能开发中，敬请期待')
+}
+
+function calcRemainingDays(expireAt: string): number {
+  if (!expireAt) return 0
+  const expire = new Date(expireAt)
+  const now = new Date()
+  return Math.max(0, Math.ceil((expire.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)))
 }
 
 onMounted(() => {

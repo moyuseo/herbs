@@ -15,11 +15,11 @@
             </span>
             <span>
               <el-icon><Clock /></el-icon>
-              {{ detail.publishTime }}
+              {{ detail.publishedAt || detail.publishTime }}
             </span>
             <span>
               <el-icon><View /></el-icon>
-              {{ detail.readCount }}
+              {{ detail.viewCount ?? detail.readCount ?? 0 }}
             </span>
           </div>
         </div>
@@ -32,18 +32,18 @@
 
         <div class="nav-links">
           <el-link
-            v-if="detail.prevId"
+            v-if="detail.prevNewsId || detail.prevId"
             :underline="false"
-            @click="goDetail(detail.prevId)"
+            @click="goDetail(detail.prevNewsId || detail.prevId)"
           >
             <el-icon><ArrowLeft /></el-icon>
             上一篇：{{ detail.prevTitle }}
           </el-link>
           <span v-else class="nav-disabled">没有更早的资讯了</span>
           <el-link
-            v-if="detail.nextId"
+            v-if="detail.nextNewsId || detail.nextId"
             :underline="false"
-            @click="goDetail(detail.nextId)"
+            @click="goDetail(detail.nextNewsId || detail.nextId)"
           >
             下一篇：{{ detail.nextTitle }}
             <el-icon><ArrowRight /></el-icon>
@@ -70,13 +70,17 @@ interface NewsDetail {
   title: string
   author: string
   source: string
+  publishedAt: string
   publishTime: string
+  viewCount: number
   readCount: number
   content: string
-  prevId: number | string | null
+  prevNewsId: number | string | null
   prevTitle: string
-  nextId: number | string | null
+  nextNewsId: number | string | null
   nextTitle: string
+  prevId: number | string | null
+  nextId: number | string | null
 }
 
 const loading = ref(false)

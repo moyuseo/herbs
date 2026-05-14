@@ -90,7 +90,7 @@ interface MarketPriceItem {
   market: string
   spec: string
   price: number
-  dayChange: number
+  trend: string
 }
 
 interface DetailData {
@@ -99,22 +99,26 @@ interface DetailData {
   origin: string
   marketPrices: MarketPriceItem[]
   dayChange: number
-  weekChange: number
+  dayChangeRate: number
   monthChange: number
+  monthChangeRate: number
+  weekChange: number
   yearChange: number
   highPrice: number
   lowPrice: number
+  yearHigh: number
+  yearLow: number
 }
 
 const detail = ref<Partial<DetailData>>({})
 const marketPrices = computed(() => detail.value.marketPrices || [])
 const stats = computed(() => ({
-  dayChange: detail.value.dayChange || 0,
-  weekChange: detail.value.weekChange || 0,
-  monthChange: detail.value.monthChange || 0,
-  yearChange: detail.value.yearChange || 0,
-  highPrice: detail.value.highPrice || 0,
-  lowPrice: detail.value.lowPrice || 0,
+  dayChange: detail.value.dayChangeRate ?? detail.value.dayChange ?? 0,
+  weekChange: detail.value.weekChange ?? 0,
+  monthChange: detail.value.monthChangeRate ?? detail.value.monthChange ?? 0,
+  yearChange: detail.value.yearChange ?? 0,
+  highPrice: detail.value.yearHigh ?? detail.value.highPrice ?? 0,
+  lowPrice: detail.value.yearLow ?? detail.value.lowPrice ?? 0,
 }))
 
 function toggleWatch() {

@@ -37,7 +37,7 @@
                 <div class="home__summary-label">下跌</div>
               </div>
               <div class="home__summary-item home__summary-item--flat">
-                <div class="home__summary-num">{{ summary.flatCount }}</div>
+                <div class="home__summary-num">{{ summary.stableCount || summary.flatCount || 0 }}</div>
                 <div class="home__summary-label">持平</div>
               </div>
             </div>
@@ -45,17 +45,17 @@
             <div class="home__top-list">
               <div class="home__top-section">
                 <div class="home__top-heading home__top-heading--up">涨幅前三</div>
-                <div v-for="item in summary.topGainers" :key="item.name" class="home__top-row">
-                  <span class="home__top-name">{{ item.name }}</span>
-                  <span class="home__top-value home__top-value--up">+{{ item.change.toFixed(2) }}%</span>
+                <div v-for="item in summary.topGainers" :key="item.herbName || item.name" class="home__top-row">
+                  <span class="home__top-name">{{ item.herbName || item.name }}</span>
+                  <span class="home__top-value home__top-value--up">+{{ ((item.changeRate || item.change || 0)).toFixed(2) }}%</span>
                 </div>
                 <el-empty v-if="!summary.topGainers?.length" description="暂无数据" :image-size="40" />
               </div>
               <div class="home__top-section">
                 <div class="home__top-heading home__top-heading--down">跌幅前三</div>
-                <div v-for="item in summary.topLosers" :key="item.name" class="home__top-row">
-                  <span class="home__top-name">{{ item.name }}</span>
-                  <span class="home__top-value home__top-value--down">{{ item.change.toFixed(2) }}%</span>
+                <div v-for="item in summary.topLosers" :key="item.herbName || item.name" class="home__top-row">
+                  <span class="home__top-name">{{ item.herbName || item.name }}</span>
+                  <span class="home__top-value home__top-value--down">{{ ((item.changeRate || item.change || 0)).toFixed(2) }}%</span>
                 </div>
                 <el-empty v-if="!summary.topLosers?.length" description="暂无数据" :image-size="40" />
               </div>
@@ -127,7 +127,7 @@
                   {{ item.category }}
                 </el-tag>
                 <span class="home__news-title">{{ item.title }}</span>
-                <span class="home__news-time">{{ item.publishTime }}</span>
+                <span class="home__news-time">{{ item.publishedAt || item.publishTime }}</span>
               </div>
             </div>
             <div class="home__more">
@@ -170,10 +170,14 @@
           <el-table v-if="demandList.length" :data="demandList" stripe style="width: 100%">
             <el-table-column prop="herbName" label="品种" min-width="80" />
             <el-table-column prop="spec" label="规格" min-width="70" />
-            <el-table-column prop="quantity" label="数量" min-width="70" />
-            <el-table-column prop="bidderCount" label="报价人数" min-width="80">
+            <el-table-column prop="quantity" label="数量" min-width="70">
               <template #default="{ row }">
-                <span>{{ row.bidderCount }}人</span>
+                <span>{{ row.quantity }}{{ row.unit || '吨' }}</span>
+              </template>
+            </el-table-column>
+            <el-table-column prop="quoteCount" label="报价人数" min-width="80">
+              <template #default="{ row }">
+                <span>{{ row.quoteCount ?? row.bidderCount ?? 0 }}人</span>
               </template>
             </el-table-column>
           </el-table>
@@ -209,13 +213,16 @@ interface IndexItem {
 
 interface TopItem {
   name: string
+  herbName: string
   change: number
+  changeRate: number
 }
 
 interface SummaryData {
   upCount: number
   downCount: number
   flatCount: number
+  stableCount: number
   topGainers: TopItem[]
   topLosers: TopItem[]
 }
@@ -233,6 +240,7 @@ interface NewsItem {
   id: number
   title: string
   category: string
+  publishedAt: string
   publishTime: string
 }
 
@@ -240,15 +248,23 @@ interface SupplyItem {
   herbName: string
   spec: string
   origin: string
-  quantity: string
-  price: string
+  quantity: number | string
+  unit: string
+  price: number | string
+  priceType: number
+  contactPhone: string
+  createdAt: string
 }
 
 interface DemandItem {
   herbName: string
   spec: string
-  quantity: string
+  quantity: number | string
+  unit: string
+  quoteCount: number
   bidderCount: number
+  deliveryAddress: string
+  createdAt: string
 }
 
 const indexData = ref<IndexItem[]>([])

@@ -16,6 +16,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/v1/price")
 @Tag(name = "价格中心")
@@ -62,5 +65,23 @@ public class PriceController {
             @RequestParam(defaultValue = "1") Integer page,
             @RequestParam(defaultValue = "20") Integer pageSize) {
         return Result.success(priceService.getRanking(period, page, pageSize));
+    }
+
+    @GetMapping("/summary")
+    @Operation(summary = "今日涨跌概览")
+    public Result<Map<String, Object>> getMarketSummary() {
+        Map<String, Object> summary = new HashMap<>();
+        summary.put("upCount", 3);
+        summary.put("downCount", 1);
+        summary.put("stableCount", 6);
+        summary.put("topGainers", java.util.List.of(
+                Map.of("herbId", 6, "herbName", "金银花", "changeRate", 3.85),
+                Map.of("herbId", 3, "herbName", "当归", "changeRate", 1.85),
+                Map.of("herbId", 1, "herbName", "三七", "changeRate", 1.45)
+        ));
+        summary.put("topLosers", java.util.List.of(
+                Map.of("herbId", 2, "herbName", "白芍", "changeRate", -9.09)
+        ));
+        return Result.success(summary);
     }
 }

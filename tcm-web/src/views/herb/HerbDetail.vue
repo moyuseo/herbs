@@ -22,11 +22,13 @@
             <span class="card-title">基本信息</span>
           </template>
           <el-descriptions :column="2" border>
-            <el-descriptions-item label="性味">{{ herb.property || '-' }}</el-descriptions-item>
-            <el-descriptions-item label="归经">{{ herb.meridian || '-' }}</el-descriptions-item>
+            <el-descriptions-item label="性味">{{ herb.natureFlavor || herb.property || '-' }}</el-descriptions-item>
+            <el-descriptions-item label="归经">{{ herb.meridianTropism || herb.meridian || '-' }}</el-descriptions-item>
             <el-descriptions-item label="药用部位">{{ herb.medicinalPart || '-' }}</el-descriptions-item>
-            <el-descriptions-item label="功效">{{ herb.effect || '-' }}</el-descriptions-item>
+            <el-descriptions-item label="功效">{{ herb.efficacy || herb.effect || '-' }}</el-descriptions-item>
             <el-descriptions-item label="主治" :span="2">{{ herb.indication || '-' }}</el-descriptions-item>
+            <el-descriptions-item label="分类">{{ herb.categoryName || '-' }}</el-descriptions-item>
+            <el-descriptions-item label="价格趋势">{{ herb.priceTrend || '-' }}</el-descriptions-item>
           </el-descriptions>
         </el-card>
 
@@ -34,14 +36,14 @@
           <template #header>
             <span class="card-title">产地分布</span>
           </template>
-          <p class="herb-detail__text">{{ herb.originDesc || '暂无产地分布信息' }}</p>
+          <p class="herb-detail__text">{{ herb.description || herb.originDesc || '暂无产地分布信息' }}</p>
         </el-card>
 
         <el-card shadow="never" class="herb-detail__card">
           <template #header>
             <span class="card-title">规格等级</span>
           </template>
-          <p class="herb-detail__text">{{ herb.specDesc || '暂无规格等级信息' }}</p>
+          <p class="herb-detail__text">{{ herb.specDesc || '按市场统货、选货等规格分级' }}</p>
         </el-card>
 
         <el-card shadow="never" class="herb-detail__card">
@@ -83,17 +85,24 @@ const loading = ref(false)
 const isWatched = ref(false)
 
 interface HerbDetail {
+  id: number | string
   herbId: number | string
   name: string
   alias: string
+  natureFlavor: string
   property: string
+  meridianTropism: string
   meridian: string
   medicinalPart: string
+  efficacy: string
   effect: string
   indication: string
+  description: string
   originDesc: string
   specDesc: string
   currentPrice: number | null
+  priceTrend: string
+  categoryName: string
 }
 
 const herb = ref<HerbDetail | null>(null)

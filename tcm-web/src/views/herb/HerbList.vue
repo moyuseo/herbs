@@ -14,16 +14,16 @@
         </el-form-item>
         <el-form-item label="分类">
           <el-select
-            v-model="filters.category"
+            v-model="filters.categoryId"
             placeholder="全部分类"
             clearable
             @change="handleSearch"
           >
             <el-option
               v-for="cat in categories"
-              :key="cat"
-              :label="cat"
-              :value="cat"
+              :key="cat.id"
+              :label="cat.name"
+              :value="cat.id"
             />
           </el-select>
         </el-form-item>
@@ -57,15 +57,15 @@
           <el-card
             shadow="hover"
             class="herb-card"
-            @click="goDetail(item.herbId)"
+            @click="goDetail(item.id || item.herbId)"
           >
             <div class="herb-card__name">{{ item.name }}</div>
             <div class="herb-card__alias">{{ item.alias || '-' }}</div>
             <div class="herb-card__prop">
-              <el-tag size="small" type="info">{{ item.property || '-' }}</el-tag>
-              <el-tag size="small" type="warning" class="herb-card__tag">{{ item.meridian || '-' }}</el-tag>
+              <el-tag size="small" type="info">{{ item.natureFlavor || item.property || '-' }}</el-tag>
+              <el-tag size="small" type="warning" class="herb-card__tag">{{ item.meridianTropism || item.meridian || '-' }}</el-tag>
             </div>
-            <div class="herb-card__effect">{{ item.effect || '-' }}</div>
+            <div class="herb-card__effect">{{ item.efficacy || item.effect || '-' }}</div>
           </el-card>
         </el-col>
       </el-row>
@@ -94,20 +94,29 @@ import { getHerbList } from '@/api/herb'
 const router = useRouter()
 
 const categories = [
-  '根茎类', '果实类', '全草类', '花类', '叶类',
-  '树皮类', '藤木类', '树脂类', '菌藻类', '动物类', '矿物类', '其他类',
+  { id: 1, name: '根茎类' }, { id: 2, name: '果实类' }, { id: 3, name: '全草类' },
+  { id: 4, name: '花类' }, { id: 5, name: '叶类' }, { id: 6, name: '树皮类' },
+  { id: 7, name: '藤木类' }, { id: 8, name: '树脂类' }, { id: 9, name: '菌藻类' },
+  { id: 10, name: '动物类' }, { id: 11, name: '矿物类' }, { id: 12, name: '其他类' },
 ]
 
 const pinyinLetters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')
 
 interface HerbItem {
+  id: number | string
   herbId: number | string
   name: string
   alias: string
+  natureFlavor: string
   property: string
+  meridianTropism: string
   meridian: string
+  efficacy: string
   effect: string
   pinyin: string
+  categoryId: number
+  categoryName: string
+  medicinalPart: string
 }
 
 const loading = ref(false)
@@ -119,7 +128,7 @@ const total = ref(0)
 
 const filters = reactive({
   keyword: '',
-  category: '',
+  categoryId: null as number | null,
 })
 
 async function fetchList() {
@@ -127,7 +136,7 @@ async function fetchList() {
   try {
     const res = (await getHerbList({
       keyword: filters.keyword || undefined,
-      category: filters.category || undefined,
+      categoryId: filters.categoryId || undefined,
       pinyin: activePinyin.value || undefined,
       page: page.value,
       pageSize: pageSize.value,
@@ -149,7 +158,7 @@ function handleSearch() {
 
 function resetFilters() {
   filters.keyword = ''
-  filters.category = ''
+  filters.categoryId = null
   activePinyin.value = ''
   handleSearch()
 }

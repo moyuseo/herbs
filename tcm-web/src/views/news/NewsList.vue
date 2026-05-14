@@ -19,7 +19,7 @@
       >
         <div class="card-body">
           <el-image
-            :src="item.coverUrl || defaultCover"
+            :src="item.coverImage || item.coverUrl || defaultCover"
             fit="cover"
             class="cover-img"
           >
@@ -34,10 +34,10 @@
             <p class="summary">{{ item.summary }}</p>
             <div class="meta">
               <el-tag size="small" type="info">{{ item.category }}</el-tag>
-              <span class="publish-time">{{ item.publishTime }}</span>
+              <span class="publish-time">{{ item.publishedAt || item.publishTime }}</span>
               <span class="read-count">
                 <el-icon><View /></el-icon>
-                {{ item.readCount }}
+                {{ item.viewCount ?? item.readCount ?? 0 }}
               </span>
             </div>
           </div>
@@ -72,9 +72,12 @@ interface NewsItem {
   id: number | string
   title: string
   summary: string
+  coverImage: string
   coverUrl: string
   category: string
+  publishedAt: string
   publishTime: string
+  viewCount: number
   readCount: number
 }
 
