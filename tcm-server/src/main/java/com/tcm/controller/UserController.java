@@ -11,6 +11,8 @@ import com.tcm.mapper.HerbMapper;
 import com.tcm.mapper.PriceMapper;
 import com.tcm.mapper.UserMapper;
 import com.tcm.mapper.UserWatchlistMapper;
+import com.tcm.service.PriceAlertService;
+import com.tcm.vo.PriceAlertVO;
 import com.tcm.vo.UserVO;
 import com.tcm.vo.WatchlistVO;
 import io.swagger.v3.oas.annotations.Operation;
@@ -34,15 +36,18 @@ public class UserController {
     private final UserWatchlistMapper userWatchlistMapper;
     private final HerbMapper herbMapper;
     private final PriceMapper priceMapper;
+    private final PriceAlertService priceAlertService;
 
     public UserController(UserMapper userMapper,
                           UserWatchlistMapper userWatchlistMapper,
                           HerbMapper herbMapper,
-                          PriceMapper priceMapper) {
+                          PriceMapper priceMapper,
+                          PriceAlertService priceAlertService) {
         this.userMapper = userMapper;
         this.userWatchlistMapper = userWatchlistMapper;
         this.herbMapper = herbMapper;
         this.priceMapper = priceMapper;
+        this.priceAlertService = priceAlertService;
     }
 
     @GetMapping("/profile")
@@ -193,5 +198,79 @@ public class UserController {
         }
         userWatchlistMapper.deleteById(id);
         return Result.success();
+    }
+
+    @GetMapping("/alerts")
+    @Operation(summary = "预警列表")
+    public Result<List<PriceAlertVO>> getAlerts(@RequestHeader("X-User-Id") Long userId) {
+        return Result.success(priceAlertService.getUserAlerts(userId));
+    }
+
+    @PostMapping("/alerts")
+    @Operation(summary = "创建预警")
+    public Result<Long> createAlert(@RequestHeader("X-User-Id") Long userId,
+                                    @RequestBody CreateAlertRequest body) {
+        Long id = priceAlertService.createAlert(userId, body.getHerbId(),
+                body.getConditionType(), body.getThreshold());
+        return Result.success(id);
+    }
+
+    @DeleteMapping("/alerts/{id}")
+    @Operation(summary = "删除预警")
+    public Result<Void> deleteAlert(@RequestHeader("X-User-Id") Long userId,
+                                    @PathVariable Long id) {
+        priceAlertService.deleteAlert(id, userId);
+        return Result.success();
+    }
+
+    @PutMapping("/alerts/{id}/toggle")
+    @Operation(summary = "启用/禁用预警")
+    public Result<Void> toggleAlert(@RequestHeader("X-User-Id") Long userId,
+                                    @PathVariable Long id,
+                                    @RequestBody ToggleAlertRequest body) {
+        priceAlertService.toggleAlert(id, userId, body.getActive());
+        return Result.success();
+    }
+
+    public static class CreateAlertRequest {
+        private Long herbId;
+        private Integer conditionType;
+        private BigDecimal threshold;
+
+        public Long getHerbId() {
+            return herbId;
+        }
+
+        public void setHerbId(Long herbId) {
+            this.herbId = herbId;
+        }
+
+        public Integer getConditionType() {
+            return conditionType;
+        }
+
+        public void setConditionType(Integer conditionType) {
+            this.conditionType = conditionType;
+        }
+
+        public BigDecimal getThreshold() {
+            return threshold;
+        }
+
+        public void setThreshold(BigDecimal threshold) {
+            this.threshold = threshold;
+        }
+    }
+
+    public static class ToggleAlertRequest {
+        private Boolean active;
+
+        public Boolean getActive() {
+            return active;
+        }
+
+        public void setActive(Boolean active) {
+            this.active = active;
+        }
     }
 }

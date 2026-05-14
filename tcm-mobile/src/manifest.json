@@ -1,0 +1,14 @@
+{
+  "name": "中药材行情",
+  "appid": "",
+  "description": "中药材行业行情数据平台",
+  "versionName": "1.0.0",
+  "versionCode": "100",
+  "transformPx": false,
+  "h5": {
+    "title": "中药材行情",
+    "router": {
+      "mode": "hash"
+    }
+  }
+}

@@ -3,9 +3,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
+import 'leaflet.heat'
 
 interface OriginItem {
   name: string
@@ -16,7 +17,21 @@ interface OriginItem {
   avgPrice?: string
 }
 
-const originData: OriginItem[] = [
+interface HeatPoint {
+  lat: number
+  lng: number
+  intensity: number
+}
+
+const props = withDefaults(defineProps<{
+  heatData?: HeatPoint[]
+  showHeatmap?: boolean
+}>(), {
+  heatData: () => [],
+  showHeatmap: true,
+})
+
+const defaultOriginData: OriginItem[] = [
   { name: '亳州', province: '安徽', herbs: ['白芍', '菊花'], lat: 33.87, lng: 115.78, avgPrice: '28.50' },
   { name: '安国', province: '河北', herbs: ['柴胡', '桔梗'], lat: 38.42, lng: 115.33, avgPrice: '35.20' },
   { name: '文山', province: '云南', herbs: ['三七'], lat: 23.37, lng: 104.24, avgPrice: '128.00' },
@@ -28,25 +43,31 @@ const originData: OriginItem[] = [
   { name: '抚松', province: '吉林', herbs: ['人参'], lat: 42.22, lng: 127.15, avgPrice: '265.00' },
 ]
 
+const defaultHeatData: HeatPoint[] = [
+  { lat: 33.87, lng: 115.77, intensity: 0.8 },
+  { lat: 38.42, lng: 115.33, intensity: 0.3 },
+  { lat: 23.37, lng: 104.33, intensity: 0.6 },
+  { lat: 34.44, lng: 104.02, intensity: 0.2 },
+  { lat: 35.08, lng: 105.20, intensity: 0.1 },
+  { lat: 35.50, lng: 117.63, intensity: 0.9 },
+  { lat: 37.48, lng: 105.67, intensity: 0.4 },
+  { lat: 35.10, lng: 113.40, intensity: 0.5 },
+  { lat: 42.33, lng: 127.15, intensity: 0.3 },
+]
+
 const mapRef = ref<HTMLDivElement>()
 let map: L.Map | null = null
+let markerLayerGroup: L.LayerGroup | null = null
+let heatLayer: L.Layer | null = null
 
-function initMap() {
-  if (!mapRef.value) return
+function getHeatPoints(): Array<[number, number, number]> {
+  const source = props.heatData.length > 0 ? props.heatData : defaultHeatData
+  return source.map((p) => [p.lat, p.lng, p.intensity])
+}
 
-  map = L.map(mapRef.value, {
-    center: [35.86, 104.19],
-    zoom: 4,
-    zoomControl: true,
-    attributionControl: true,
-  })
-
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; OpenStreetMap contributors',
-    maxZoom: 18,
-  }).addTo(map)
-
-  originData.forEach((item) => {
+function createMarkerLayer(): L.LayerGroup {
+  const group = L.layerGroup()
+  defaultOriginData.forEach((item) => {
     const icon = L.divIcon({
       className: 'origin-marker',
       html: `<div class="origin-marker__pin"><span class="origin-marker__dot"></span></div>`,
@@ -64,13 +85,87 @@ function initMap() {
     `
 
     L.marker([item.lat, item.lng], { icon })
-      .addTo(map)
+      .addTo(group)
       .bindPopup(popupContent, {
         maxWidth: 260,
         className: 'origin-popup-container',
       })
   })
+  return group
 }
+
+function createHeatLayer(): L.Layer {
+  const points = getHeatPoints()
+  return (L as any).heatLayer(points, {
+    radius: 40,
+    blur: 30,
+    maxZoom: 8,
+    gradient: {
+      0.0: '#27ae60',
+      0.5: '#f39c12',
+      1.0: '#e74c3c',
+    },
+  })
+}
+
+function initMap() {
+  if (!mapRef.value) return
+
+  map = L.map(mapRef.value, {
+    center: [35.86, 104.19],
+    zoom: 4,
+    zoomControl: true,
+    attributionControl: true,
+  })
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors',
+    maxZoom: 18,
+  }).addTo(map)
+
+  markerLayerGroup = createMarkerLayer()
+  heatLayer = createHeatLayer()
+
+  const baseLayers: Record<string, L.Layer> = {}
+  const overlayLayers: Record<string, L.Layer> = {
+    '标记点': markerLayerGroup,
+    '热力图': heatLayer,
+  }
+
+  if (props.showHeatmap) {
+    heatLayer.addTo(map)
+  }
+  markerLayerGroup.addTo(map)
+
+  L.control.layers(baseLayers, overlayLayers, { position: 'topright' }).addTo(map)
+}
+
+function updateHeatLayer() {
+  if (!map || !heatLayer) return
+
+  if (heatLayer && map.hasLayer(heatLayer)) {
+    map.removeLayer(heatLayer)
+  }
+
+  heatLayer = createHeatLayer()
+
+  if (props.showHeatmap) {
+    heatLayer.addTo(map)
+  }
+}
+
+watch(() => props.heatData, () => {
+  updateHeatLayer()
+}, { deep: true })
+
+watch(() => props.showHeatmap, (val) => {
+  if (!map || !heatLayer) return
+  if (val && !map.hasLayer(heatLayer)) {
+    heatLayer.addTo(map)
+  } else if (!val && map.hasLayer(heatLayer)) {
+    map.removeLayer(heatLayer)
+  }
+})
 
 onMounted(() => {
   initMap()
@@ -80,6 +175,8 @@ onUnmounted(() => {
   if (map) {
     map.remove()
     map = null
+    markerLayerGroup = null
+    heatLayer = null
   }
 })
 </script>

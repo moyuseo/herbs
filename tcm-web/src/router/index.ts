@@ -78,6 +78,16 @@ const router = createRouter({
       name: 'MyPublishments',
       component: () => import('@/views/user/MyPublishments.vue'),
     },
+    {
+      path: '/user/alerts',
+      name: 'PriceAlerts',
+      component: () => import('@/views/user/PriceAlerts.vue'),
+    },
+    {
+      path: '/user/membership',
+      name: 'Membership',
+      component: () => import('@/views/user/Membership.vue'),
+    },
   ],
 })
 

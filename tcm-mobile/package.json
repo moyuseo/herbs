@@ -1,0 +1,24 @@
+{
+  "name": "tcm-mobile",
+  "version": "1.0.0",
+  "scripts": {
+    "dev:h5": "uni",
+    "build:h5": "uni build"
+  },
+  "dependencies": {
+    "@dcloudio/uni-app": "3.0.0-5000720260410001",
+    "@dcloudio/uni-app-plus": "3.0.0-5000720260410001",
+    "@dcloudio/uni-components": "3.0.0-5000720260410001",
+    "@dcloudio/uni-h5": "3.0.0-5000720260410001",
+    "vue": "^3.4.21",
+    "pinia": "^2.1.7"
+  },
+  "devDependencies": {
+    "@dcloudio/types": "^3.4.8",
+    "@dcloudio/uni-automator": "3.0.0-5000720260410001",
+    "@dcloudio/uni-cli-shared": "3.0.0-5000720260410001",
+    "@dcloudio/vite-plugin-uni": "3.0.0-5000720260410001",
+    "typescript": "^5.4.5",
+    "vite": "^5.2.8"
+  }
+}

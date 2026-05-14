@@ -22,6 +22,8 @@
             <el-menu-item index="/price/ranking">涨跌排行</el-menu-item>
           </el-sub-menu>
 
+          <el-menu-item index="/data/index">价格指数</el-menu-item>
+
           <el-menu-item index="/news/list">行情资讯</el-menu-item>
 
           <el-sub-menu index="supply">
@@ -78,6 +80,8 @@
           <el-menu-item index="/price/origin">产地价格</el-menu-item>
           <el-menu-item index="/price/ranking">涨跌排行</el-menu-item>
         </el-sub-menu>
+
+        <el-menu-item index="/data/index">价格指数</el-menu-item>
 
         <el-menu-item index="/news/list">行情资讯</el-menu-item>
 

@@ -1,0 +1,28 @@
+{
+  "pages": [
+    { "path": "pages/index/index", "style": { "navigationBarTitleText": "中药材行情" } },
+    { "path": "pages/price/market", "style": { "navigationBarTitleText": "市场价格" } },
+    { "path": "pages/price/detail", "style": { "navigationBarTitleText": "品种详情" } },
+    { "path": "pages/news/list", "style": { "navigationBarTitleText": "行情资讯" } },
+    { "path": "pages/news/detail", "style": { "navigationBarTitleText": "资讯详情" } },
+    { "path": "pages/supply/list", "style": { "navigationBarTitleText": "供求信息" } },
+    { "path": "pages/user/login", "style": { "navigationBarTitleText": "登录" } },
+    { "path": "pages/user/profile", "style": { "navigationBarTitleText": "个人中心" } }
+  ],
+  "tabBar": {
+    "color": "#999",
+    "selectedColor": "#e74c3c",
+    "list": [
+      { "pagePath": "pages/index/index", "text": "首页" },
+      { "pagePath": "pages/price/market", "text": "价格" },
+      { "pagePath": "pages/news/list", "text": "资讯" },
+      { "pagePath": "pages/user/profile", "text": "我的" }
+    ]
+  },
+  "globalStyle": {
+    "navigationBarTextStyle": "white",
+    "navigationBarTitleText": "中药材行情",
+    "navigationBarBackgroundColor": "#e74c3c",
+    "backgroundColor": "#f5f5f5"
+  }
+}

@@ -4,8 +4,19 @@
       <el-col :span="16">
         <el-card shadow="hover" class="home__card">
           <template #header>
-            <span class="home__card-title">综合价格指数走势</span>
+            <div class="home__card-header">
+              <span class="home__card-title">综合价格指数走势</span>
+              <el-link type="primary" @click="router.push({ name: 'PriceIndex' })">详情 →</el-link>
+            </div>
           </template>
+          <div v-if="indexData.length" class="home__index-summary">
+            <div class="home__index-value">
+              <span class="home__index-num">{{ latestIndexValue }}</span>
+              <span v-if="latestIndexChange !== null" class="home__index-change" :class="latestIndexChange >= 0 ? 'home__index-change--up' : 'home__index-change--down'">
+                {{ latestIndexChange >= 0 ? '+' : '' }}{{ (latestIndexChange * 100).toFixed(2) }}%
+              </span>
+            </div>
+          </div>
           <div v-if="indexData.length" ref="indexChartRef" class="home__chart" />
           <el-empty v-else description="暂无指数数据" :image-size="80" />
         </el-card>
@@ -180,7 +191,7 @@
 import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import * as echarts from 'echarts'
-import { getPriceIndex, getMarketSummary, getMarketPrices } from '@/api/price'
+import { getPriceIndex, getLatestIndex, getMarketSummary, getMarketPrices } from '@/api/price'
 import { getNewsList } from '@/api/news'
 import { getSupplyList, getDemandList } from '@/api/supply'
 import PriceTag from '@/components/price/PriceTag.vue'
@@ -246,6 +257,9 @@ const marketPrices = ref<MarketPriceItem[]>([])
 const newsList = ref<NewsItem[]>([])
 const supplyList = ref<SupplyItem[]>([])
 const demandList = ref<DemandItem[]>([])
+
+const latestIndexValue = ref('--')
+const latestIndexChange = ref<number | null>(null)
 
 const indexChartRef = ref<HTMLDivElement>()
 let indexChart: echarts.ECharts | null = null
@@ -335,15 +349,38 @@ function handleResize() {
 
 async function fetchIndexData() {
   try {
-    const res = (await getPriceIndex({ days: 30 })) as any
-    const list = Array.isArray(res) ? res : res?.list || res?.data || []
-    if (list.length) {
-      indexData.value = list
+    const res = (await getPriceIndex({ indexType: 'composite', period: 'month' })) as any
+    const list = Array.isArray(res) ? res : []
+    if (list.length > 0 && list[0].dates?.length) {
+      const item = list[0]
+      indexData.value = item.dates.map((d: string, i: number) => ({
+        date: d.includes('-') ? `${d.split('-')[1]}/${d.split('-')[2]}` : d,
+        value: Number(item.values[i]),
+      }))
+      if (item.indexValue != null) {
+        latestIndexValue.value = Number(item.indexValue).toFixed(2)
+      }
+      if (item.changeRate != null) {
+        latestIndexChange.value = Number(item.changeRate)
+      }
     } else {
       indexData.value = generateMockIndexData()
     }
   } catch {
     indexData.value = generateMockIndexData()
+  }
+  try {
+    const latest = (await getLatestIndex({ indexType: 'composite' })) as any
+    if (latest) {
+      if (latest.indexValue != null) {
+        latestIndexValue.value = Number(latest.indexValue).toFixed(2)
+      }
+      if (latest.changeRate != null) {
+        latestIndexChange.value = Number(latest.changeRate)
+      }
+    }
+  } catch {
+    // keep existing values
   }
   await nextTick()
   renderIndexChart()
@@ -464,6 +501,45 @@ onUnmounted(() => {
     font-size: 16px;
     font-weight: 600;
     color: $text-color;
+  }
+
+  &__card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  &__index-summary {
+    margin-bottom: 12px;
+  }
+
+  &__index-value {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+  }
+
+  &__index-num {
+    font-size: 28px;
+    font-weight: 700;
+    color: $text-color;
+  }
+
+  &__index-change {
+    font-size: 14px;
+    font-weight: 600;
+    padding: 1px 8px;
+    border-radius: 4px;
+
+    &--up {
+      color: #e74c3c;
+      background: rgba(231, 76, 60, 0.08);
+    }
+
+    &--down {
+      color: #27ae60;
+      background: rgba(39, 174, 96, 0.08);
+    }
   }
 
   &__chart {

@@ -21,7 +21,11 @@ export function getRanking(params?: Record<string, any>): Promise<any> {
 }
 
 export function getPriceIndex(params?: Record<string, any>): Promise<any> {
-  return request.get('/price/index', { params }) as Promise<any>
+  return request.get('/data/index', { params }) as Promise<any>
+}
+
+export function getLatestIndex(params?: Record<string, any>): Promise<any> {
+  return request.get('/data/index/latest', { params }) as Promise<any>
 }
 
 export function getMarketSummary(): Promise<any> {
