@@ -1,0 +1,57 @@
+@use './variables' as *;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  font-family: 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  color: $text-color;
+  background-color: $bg-color;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: $primary-color;
+  text-decoration: none;
+  &:hover {
+    color: $primary-light;
+  }
+}
+
+.container {
+  width: $container-width;
+  margin: 0 auto;
+}
+
+.page-wrapper {
+  min-height: calc(100vh - #{$header-height} - #{$footer-height});
+  padding: 20px 0;
+}
+
+.el-button--primary {
+  --el-button-bg-color: #{$primary-color};
+  --el-button-border-color: #{$primary-color};
+  --el-button-hover-bg-color: #{$primary-light};
+  --el-button-hover-border-color: #{$primary-light};
+  --el-button-active-bg-color: #{$primary-dark};
+  --el-button-active-border-color: #{$primary-dark};
+}
+
+.price-up {
+  color: $up-color;
+}
+
+.price-down {
+  color: $down-color;
+}
+
+.card-box {
+  background: $bg-white;
+  border-radius: $border-radius;
+  box-shadow: $shadow-light;
+  padding: 20px;
+}
