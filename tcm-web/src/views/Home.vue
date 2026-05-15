@@ -253,7 +253,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import * as echarts from 'echarts'
 import { getPriceIndex, getLatestIndex, getMarketSummary, getMarketPrices } from '@/api/price'
@@ -374,9 +374,11 @@ function generateMockSummary(): SummaryData {
 
 function renderIndexChart() {
   if (!indexChartRef.value || !indexData.value.length) return
-  if (!indexChart) {
-    indexChart = echarts.init(indexChartRef.value)
+  if (indexChart) {
+    indexChart.dispose()
+    indexChart = null
   }
+  indexChart = echarts.init(indexChartRef.value)
   const dates = indexData.value.map((d) => d.date)
   const values = indexData.value.map((d) => d.value)
   indexChart.setOption(
@@ -459,8 +461,6 @@ async function fetchIndexData() {
   } catch {
     // keep existing values
   }
-  await nextTick()
-  renderIndexChart()
 }
 
 async function fetchSummary() {
@@ -534,6 +534,16 @@ function goPriceDetail(herbId: number) {
 function goNewsDetail(id: number) {
   router.push({ name: 'NewsDetail', params: { id } })
 }
+
+watch(
+  () => [indexData.value.length, indexChartRef.value] as const,
+  () => {
+    if (indexData.value.length && indexChartRef.value) {
+      nextTick(() => renderIndexChart())
+    }
+  },
+  { flush: 'post' },
+)
 
 onMounted(async () => {
   window.addEventListener('resize', handleResize)

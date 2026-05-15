@@ -160,9 +160,11 @@ const changeText = computed(() => {
 
 function renderChart() {
   if (!chartRef.value || !historyData.value.dates?.length) return
-  if (!chart) {
-    chart = echarts.init(chartRef.value)
+  if (chart) {
+    chart.dispose()
+    chart = null
   }
+  chart = echarts.init(chartRef.value)
 
   const dates = historyData.value.dates.map((d: string) => {
     const parts = d.split('-')
@@ -242,8 +244,6 @@ async function fetchHistory() {
   } catch {
     historyData.value = { indexType: '', indexTypeName: '', indexValue: 0, changeRate: 0, dates: [], values: [] }
   }
-  await nextTick()
-  renderChart()
 }
 
 async function fetchData() {
@@ -258,6 +258,16 @@ onMounted(async () => {
   window.addEventListener('resize', handleResize)
   await fetchData()
 })
+
+watch(
+  () => [historyData.value.dates, chartRef.value] as const,
+  () => {
+    if (historyData.value.dates?.length && chartRef.value) {
+      nextTick(() => renderChart())
+    }
+  },
+  { flush: 'post' },
+)
 
 onUnmounted(() => {
   window.removeEventListener('resize', handleResize)
