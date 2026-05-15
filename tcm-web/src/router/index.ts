@@ -84,6 +84,16 @@ const router = createRouter({
       component: () => import('@/views/user/PriceAlerts.vue'),
     },
     {
+      path: '/data/index',
+      name: 'PriceIndex',
+      component: () => import('@/views/data/PriceIndexPage.vue'),
+    },
+    {
+      path: '/data/map',
+      name: 'OriginMap',
+      component: () => import('@/views/data/OriginMapPage.vue'),
+    },
+    {
       path: '/user/membership',
       name: 'Membership',
       component: () => import('@/views/user/Membership.vue'),
