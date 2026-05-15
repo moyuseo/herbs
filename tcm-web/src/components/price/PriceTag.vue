@@ -1,7 +1,14 @@
 <template>
-  <span :style="{ color: value > 0 ? '#e74c3c' : value < 0 ? '#27ae60' : '#909399', fontWeight: 500 }">
-    <el-icon v-if="value > 0" style="vertical-align: middle"><Top /></el-icon>
-    <el-icon v-else-if="value < 0" style="vertical-align: middle"><Bottom /></el-icon>
+  <span
+    class="price-tag"
+    :class="{
+      'price-tag--up': value > 0,
+      'price-tag--down': value < 0,
+      'price-tag--flat': value === 0,
+    }"
+  >
+    <el-icon v-if="value > 0" class="price-tag__icon"><Top /></el-icon>
+    <el-icon v-else-if="value < 0" class="price-tag__icon"><Bottom /></el-icon>
     {{ formatted }}
   </span>
 </template>
@@ -19,3 +26,38 @@ const formatted = computed(() => {
   return '0.00%'
 })
 </script>
+
+<style scoped lang="scss">
+@import '@/styles/variables.scss';
+
+.price-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-weight: 600;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  padding: 2px 8px;
+  border-radius: 4px;
+  line-height: 1.6;
+
+  &__icon {
+    font-size: 12px;
+  }
+
+  &--up {
+    color: $up-color;
+    background: $danger-light;
+  }
+
+  &--down {
+    color: $down-color;
+    background: $primary-lighter;
+  }
+
+  &--flat {
+    color: $text-muted;
+    background: $bg-warm;
+  }
+}
+</style>

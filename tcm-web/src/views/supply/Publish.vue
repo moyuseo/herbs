@@ -1,171 +1,189 @@
 <template>
   <div class="publish-page">
-    <el-tabs v-model="activeTab" class="publish-tabs">
-      <el-tab-pane label="发布供应" name="supply" />
-      <el-tab-pane label="发布求购" name="demand" />
-    </el-tabs>
+    <div class="publish-page__page-title">
+      <h2>发布信息</h2>
+    </div>
 
-    <el-form
-      v-if="activeTab === 'supply'"
-      ref="supplyFormRef"
-      :model="supplyForm"
-      :rules="supplyRules"
-      label-width="100px"
-      class="publish-form"
-    >
-      <el-form-item label="品种" prop="herbName">
-        <el-select
-          v-model="supplyForm.herbName"
-          filterable
-          allow-create
-          remote
-          :remote-method="searchHerbs"
-          :loading="herbSearching"
-          placeholder="搜索或输入品种名称"
-        >
-          <el-option
-            v-for="item in herbOptions"
-            :key="item"
-            :label="item"
-            :value="item"
-          />
-        </el-select>
-      </el-form-item>
-      <el-form-item label="规格" prop="spec">
-        <el-input v-model="supplyForm.spec" placeholder="如：统货、选货、一级" />
-      </el-form-item>
-      <el-form-item label="产地" prop="origin">
-        <el-input v-model="supplyForm.origin" placeholder="请输入产地" />
-      </el-form-item>
-      <el-form-item label="数量" prop="quantity">
-        <div class="quantity-row">
+    <div class="publish-page__tabs">
+      <button
+        class="publish-page__tab"
+        :class="{ 'publish-page__tab--active': activeTab === 'supply' }"
+        @click="activeTab = 'supply'"
+      >
+        发布供应
+      </button>
+      <button
+        class="publish-page__tab"
+        :class="{ 'publish-page__tab--active': activeTab === 'demand' }"
+        @click="activeTab = 'demand'"
+      >
+        发布求购
+      </button>
+    </div>
+
+    <div class="publish-page__form-wrapper">
+      <el-form
+        v-if="activeTab === 'supply'"
+        ref="supplyFormRef"
+        :model="supplyForm"
+        :rules="supplyRules"
+        label-width="100px"
+        class="publish-form"
+      >
+        <el-form-item label="品种" prop="herbName">
+          <el-select
+            v-model="supplyForm.herbName"
+            filterable
+            allow-create
+            remote
+            :remote-method="searchHerbs"
+            :loading="herbSearching"
+            placeholder="搜索或输入品种名称"
+          >
+            <el-option
+              v-for="item in herbOptions"
+              :key="item"
+              :label="item"
+              :value="item"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="规格" prop="spec">
+          <el-input v-model="supplyForm.spec" placeholder="如：统货、选货、一级" />
+        </el-form-item>
+        <el-form-item label="产地" prop="origin">
+          <el-input v-model="supplyForm.origin" placeholder="请输入产地" />
+        </el-form-item>
+        <el-form-item label="数量" prop="quantity">
+          <div class="quantity-row">
+            <el-input-number
+              v-model="supplyForm.quantity"
+              :min="1"
+              :precision="2"
+              controls-position="right"
+              class="quantity-input"
+            />
+            <el-select v-model="supplyForm.unit" class="unit-select">
+              <el-option label="公斤" value="公斤" />
+              <el-option label="吨" value="吨" />
+              <el-option label="克" value="克" />
+              <el-option label="斤" value="斤" />
+            </el-select>
+          </div>
+        </el-form-item>
+        <el-form-item label="价格类型" prop="priceType">
+          <el-radio-group v-model="supplyForm.priceType">
+            <el-radio value="明码">明码</el-radio>
+            <el-radio value="电议">电议</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item v-if="supplyForm.priceType === '明码'" label="价格" prop="price">
           <el-input-number
-            v-model="supplyForm.quantity"
-            :min="1"
+            v-model="supplyForm.price"
+            :min="0"
             :precision="2"
             controls-position="right"
-            class="quantity-input"
+            placeholder="请输入单价"
           />
-          <el-select v-model="supplyForm.unit" class="unit-select">
-            <el-option label="公斤" value="公斤" />
-            <el-option label="吨" value="吨" />
-            <el-option label="克" value="克" />
-            <el-option label="斤" value="斤" />
-          </el-select>
-        </div>
-      </el-form-item>
-      <el-form-item label="价格类型" prop="priceType">
-        <el-radio-group v-model="supplyForm.priceType">
-          <el-radio value="明码">明码</el-radio>
-          <el-radio value="电议">电议</el-radio>
-        </el-radio-group>
-      </el-form-item>
-      <el-form-item v-if="supplyForm.priceType === '明码'" label="价格" prop="price">
-        <el-input-number
-          v-model="supplyForm.price"
-          :min="0"
-          :precision="2"
-          controls-position="right"
-          placeholder="请输入单价"
-        />
-      </el-form-item>
-      <el-form-item label="联系人" prop="contactName">
-        <el-input v-model="supplyForm.contactName" placeholder="请输入联系人姓名" />
-      </el-form-item>
-      <el-form-item label="联系电话" prop="contactPhone">
-        <el-input v-model="supplyForm.contactPhone" placeholder="请输入联系电话" />
-      </el-form-item>
-      <el-form-item label="图片">
-        <el-upload
-          action="#"
-          :auto-upload="false"
-          list-type="picture-card"
-          :limit="5"
-          accept="image/*"
-        >
-          <el-icon><Plus /></el-icon>
-        </el-upload>
-      </el-form-item>
-      <el-form-item label="描述" prop="description">
-        <el-input
-          v-model="supplyForm.description"
-          type="textarea"
-          :rows="4"
-          placeholder="请输入供应描述信息"
-        />
-      </el-form-item>
-      <el-form-item>
-        <el-button type="primary" :loading="submitting" @click="handleSupplySubmit">
-          提交发布
-        </el-button>
-        <el-button @click="resetSupplyForm">重置</el-button>
-      </el-form-item>
-    </el-form>
+        </el-form-item>
+        <el-form-item label="联系人" prop="contactName">
+          <el-input v-model="supplyForm.contactName" placeholder="请输入联系人姓名" />
+        </el-form-item>
+        <el-form-item label="联系电话" prop="contactPhone">
+          <el-input v-model="supplyForm.contactPhone" placeholder="请输入联系电话" />
+        </el-form-item>
+        <el-form-item label="图片">
+          <el-upload
+            action="#"
+            :auto-upload="false"
+            list-type="picture-card"
+            :limit="5"
+            accept="image/*"
+          >
+            <el-icon><Plus /></el-icon>
+          </el-upload>
+        </el-form-item>
+        <el-form-item label="描述" prop="description">
+          <el-input
+            v-model="supplyForm.description"
+            type="textarea"
+            :rows="4"
+            placeholder="请输入供应描述信息"
+          />
+        </el-form-item>
+        <el-form-item>
+          <button type="button" class="publish-page__submit-btn" :disabled="submitting" @click="handleSupplySubmit">
+            {{ submitting ? '提交中...' : '提交发布' }}
+          </button>
+          <button type="button" class="publish-page__reset-btn" @click="resetSupplyForm">重置</button>
+        </el-form-item>
+      </el-form>
 
-    <el-form
-      v-if="activeTab === 'demand'"
-      ref="demandFormRef"
-      :model="demandForm"
-      :rules="demandRules"
-      label-width="100px"
-      class="publish-form"
-    >
-      <el-form-item label="品种" prop="herbName">
-        <el-select
-          v-model="demandForm.herbName"
-          filterable
-          allow-create
-          remote
-          :remote-method="searchHerbs"
-          :loading="herbSearching"
-          placeholder="搜索或输入品种名称"
-        >
-          <el-option
-            v-for="item in herbOptions"
-            :key="item"
-            :label="item"
-            :value="item"
-          />
-        </el-select>
-      </el-form-item>
-      <el-form-item label="规格" prop="spec">
-        <el-input v-model="demandForm.spec" placeholder="如：统货、选货、一级" />
-      </el-form-item>
-      <el-form-item label="数量" prop="quantity">
-        <div class="quantity-row">
-          <el-input-number
-            v-model="demandForm.quantity"
-            :min="1"
-            :precision="2"
-            controls-position="right"
-            class="quantity-input"
-          />
-          <el-select v-model="demandForm.unit" class="unit-select">
-            <el-option label="公斤" value="公斤" />
-            <el-option label="吨" value="吨" />
-            <el-option label="克" value="克" />
-            <el-option label="斤" value="斤" />
+      <el-form
+        v-if="activeTab === 'demand'"
+        ref="demandFormRef"
+        :model="demandForm"
+        :rules="demandRules"
+        label-width="100px"
+        class="publish-form"
+      >
+        <el-form-item label="品种" prop="herbName">
+          <el-select
+            v-model="demandForm.herbName"
+            filterable
+            allow-create
+            remote
+            :remote-method="searchHerbs"
+            :loading="herbSearching"
+            placeholder="搜索或输入品种名称"
+          >
+            <el-option
+              v-for="item in herbOptions"
+              :key="item"
+              :label="item"
+              :value="item"
+            />
           </el-select>
-        </div>
-      </el-form-item>
-      <el-form-item label="交货地址" prop="deliveryAddress">
-        <el-input v-model="demandForm.deliveryAddress" placeholder="请输入交货地址" />
-      </el-form-item>
-      <el-form-item label="描述" prop="description">
-        <el-input
-          v-model="demandForm.description"
-          type="textarea"
-          :rows="4"
-          placeholder="请输入求购描述信息"
-        />
-      </el-form-item>
-      <el-form-item>
-        <el-button type="primary" :loading="submitting" @click="handleDemandSubmit">
-          提交发布
-        </el-button>
-        <el-button @click="resetDemandForm">重置</el-button>
-      </el-form-item>
-    </el-form>
+        </el-form-item>
+        <el-form-item label="规格" prop="spec">
+          <el-input v-model="demandForm.spec" placeholder="如：统货、选货、一级" />
+        </el-form-item>
+        <el-form-item label="数量" prop="quantity">
+          <div class="quantity-row">
+            <el-input-number
+              v-model="demandForm.quantity"
+              :min="1"
+              :precision="2"
+              controls-position="right"
+              class="quantity-input"
+            />
+            <el-select v-model="demandForm.unit" class="unit-select">
+              <el-option label="公斤" value="公斤" />
+              <el-option label="吨" value="吨" />
+              <el-option label="克" value="克" />
+              <el-option label="斤" value="斤" />
+            </el-select>
+          </div>
+        </el-form-item>
+        <el-form-item label="交货地址" prop="deliveryAddress">
+          <el-input v-model="demandForm.deliveryAddress" placeholder="请输入交货地址" />
+        </el-form-item>
+        <el-form-item label="描述" prop="description">
+          <el-input
+            v-model="demandForm.description"
+            type="textarea"
+            :rows="4"
+            placeholder="请输入求购描述信息"
+          />
+        </el-form-item>
+        <el-form-item>
+          <button type="button" class="publish-page__submit-btn" :disabled="submitting" @click="handleDemandSubmit">
+            {{ submitting ? '提交中...' : '提交发布' }}
+          </button>
+          <button type="button" class="publish-page__reset-btn" @click="resetDemandForm">重置</button>
+        </el-form-item>
+      </el-form>
+    </div>
   </div>
 </template>
 
@@ -289,15 +307,168 @@ function resetDemandForm() {
 }
 </script>
 
-<style scoped>
-.publish-page {
-  padding: 20px;
-  max-width: 720px;
-  margin: 0 auto;
-}
+<style scoped lang="scss">
+@import '@/styles/variables.scss';
 
-.publish-tabs {
-  margin-bottom: 20px;
+.publish-page {
+  padding: 24px 16px;
+  max-width: 820px;
+  margin: 0 auto;
+
+  &__page-title {
+    margin-bottom: 24px;
+
+    h2 {
+      margin: 0;
+      font-family: $font-display;
+      font-size: 22px;
+      font-weight: 600;
+      color: $text-color;
+      padding-left: 16px;
+      position: relative;
+
+      &::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 4px;
+        height: 24px;
+        background: $primary-color;
+        border-radius: 2px;
+      }
+    }
+  }
+
+  &__tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+    background: $bg-warm;
+    padding: 4px;
+    border-radius: 26px;
+    border: 1px solid $border-light;
+    width: fit-content;
+  }
+
+  &__tab {
+    padding: 8px 24px;
+    border-radius: 22px;
+    border: none;
+    background: transparent;
+    color: $text-secondary;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      color: $primary-color;
+    }
+
+    &--active {
+      background: $primary-color;
+      color: #fff;
+      box-shadow: 0 1px 4px rgba($primary-color, 0.3);
+
+      &:hover {
+        color: #fff;
+      }
+    }
+  }
+
+  &__form-wrapper {
+    background: $card-bg;
+    border-radius: $radius-md;
+    box-shadow: $shadow-sm;
+    border: 1px solid $border-light;
+    padding: 32px 36px;
+
+    :deep(.el-form-item__label) {
+      color: $text-color;
+      font-weight: 500;
+    }
+
+    :deep(.el-input__wrapper),
+    :deep(.el-textarea__inner),
+    :deep(.el-input-number) {
+      background: $bg-warm;
+      border-color: $border-color;
+    }
+
+    :deep(.el-input__wrapper:hover),
+    :deep(.el-textarea__inner:hover) {
+      box-shadow: 0 0 0 1px $primary-light inset;
+    }
+
+    :deep(.el-input__wrapper.is-focus),
+    :deep(.el-textarea__inner:focus) {
+      box-shadow: 0 0 0 1px $primary-color inset;
+    }
+
+    :deep(.el-select) {
+      width: 100%;
+    }
+
+    :deep(.el-radio__input.is-checked .el-radio__inner) {
+      background: $primary-color;
+      border-color: $primary-color;
+    }
+
+    :deep(.el-radio__input.is-checked + .el-radio__label) {
+      color: $primary-color;
+    }
+
+    :deep(.el-upload--picture-card) {
+      background: $bg-warm;
+      border-color: $border-color;
+
+      &:hover {
+        border-color: $primary-light;
+      }
+    }
+  }
+
+  &__submit-btn {
+    padding: 10px 36px;
+    border-radius: 22px;
+    border: none;
+    background: linear-gradient(135deg, $accent-color, darken(#c8953e, 8%));
+    color: #fff;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    box-shadow: 0 2px 8px rgba($accent-color, 0.3);
+
+    &:hover:not(:disabled) {
+      box-shadow: 0 4px 16px rgba($accent-color, 0.4);
+      transform: translateY(-1px);
+    }
+
+    &:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+  }
+
+  &__reset-btn {
+    padding: 10px 28px;
+    border-radius: 22px;
+    border: 1px solid $border-color;
+    background: $card-bg;
+    color: $text-secondary;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-left: 12px;
+
+    &:hover {
+      border-color: $primary-light;
+      color: $primary-color;
+    }
+  }
 }
 
 .publish-form {
@@ -316,5 +487,22 @@ function resetDemandForm() {
 
 .unit-select {
   width: 100px;
+}
+
+@media (max-width: 768px) {
+  .publish-page {
+    &__tabs {
+      width: 100%;
+    }
+
+    &__tab {
+      flex: 1;
+      text-align: center;
+    }
+
+    &__form-wrapper {
+      padding: 20px 16px;
+    }
+  }
 }
 </style>

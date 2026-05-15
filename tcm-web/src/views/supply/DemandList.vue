@@ -1,6 +1,17 @@
 <template>
   <div class="demand-list">
-    <el-card shadow="never" class="filter-card">
+    <div class="page-header">
+      <div class="page-title">
+        <h1>求购信息</h1>
+        <p class="page-subtitle">精准匹配需求，高效对接资源</p>
+      </div>
+      <el-button class="publish-btn" @click="router.push('/demand/publish')">
+        <el-icon><Plus /></el-icon>
+        发布求购
+      </el-button>
+    </div>
+
+    <div class="filter-section">
       <el-form :inline="true" :model="filters" class="filter-form">
         <el-form-item label="品种">
           <el-input
@@ -31,62 +42,66 @@
           <el-button @click="resetFilters">重置</el-button>
         </el-form-item>
       </el-form>
-    </el-card>
+    </div>
 
     <div v-loading="loading" class="demand-cards">
       <el-empty v-if="!loading && demandList.length === 0" description="暂无求购信息" />
-      <el-card
+      <div
         v-for="item in demandList"
         :key="item.id"
-        shadow="hover"
         class="demand-card"
       >
-        <div class="card-header">
-          <span class="herb-name">{{ item.herbName }}</span>
-          <el-tag
-            v-if="item.remainingDays <= 3"
-            size="small"
-            type="danger"
-          >
-            即将截止
-          </el-tag>
-        </div>
-        <div class="card-body">
-          <div class="info-row">
-            <span class="label">规格：</span>
-            <span>{{ item.spec || '-' }}</span>
-          </div>
-          <div class="info-row">
-            <span class="label">需求数量：</span>
-            <span>{{ item.quantity }}{{ item.unit }}</span>
-          </div>
-          <div class="info-row">
-            <span class="label">交货地址：</span>
-            <span>{{ item.deliveryAddress || '-' }}</span>
-          </div>
-          <div class="info-row">
-            <span class="label">已报价：</span>
-            <span class="quote-count">{{ item.quoteCount }}人</span>
-          </div>
-          <div class="info-row">
-            <span class="label">剩余天数：</span>
-            <span :class="['remaining-days', { urgent: item.remainingDays <= 3 }]">
-              {{ item.remainingDays > 0 ? `${item.remainingDays}天` : '已截止' }}
+        <div class="card-top">
+          <div class="card-title-row">
+            <span class="herb-name">{{ item.herbName }}</span>
+            <span
+              :class="['countdown-badge', getCountdownClass(item.remainingDays)]"
+            >
+              <template v-if="item.remainingDays > 0">
+                剩余 {{ item.remainingDays }} 天
+              </template>
+              <template v-else>已截止</template>
             </span>
           </div>
         </div>
+
+        <div class="card-info-grid">
+          <div class="info-item">
+            <span class="info-label">规格</span>
+            <span class="info-value">{{ item.spec || '-' }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">需求数量</span>
+            <span class="info-value">{{ item.quantity }}{{ item.unit }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">交货地址</span>
+            <span class="info-value address-value">{{ item.deliveryAddress || '-' }}</span>
+          </div>
+        </div>
+
+        <div class="card-meta-row">
+          <span class="quote-badge">
+            <el-icon><ChatDotRound /></el-icon>
+            {{ item.quoteCount }}人已报价
+          </span>
+        </div>
+
+        <div v-if="item.description" class="card-desc">
+          {{ item.description }}
+        </div>
+
         <div class="card-footer">
           <span class="publish-time">{{ item.publishTime }}</span>
           <el-button
-            type="primary"
-            size="small"
+            class="quote-btn"
             :disabled="item.remainingDays <= 0"
             @click="handleQuote(item)"
           >
             我要报价
           </el-button>
         </div>
-      </el-card>
+      </div>
     </div>
 
     <div class="pagination-wrapper">
@@ -197,20 +212,101 @@ function calcRemainingDays(expireAt: string): number {
   return Math.max(0, Math.ceil((expire.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)))
 }
 
+function getCountdownClass(days: number): string {
+  if (days <= 0) return 'countdown-expired'
+  if (days < 3) return 'countdown-urgent'
+  if (days <= 7) return 'countdown-warning'
+  return 'countdown-safe'
+}
+
 onMounted(() => {
   fetchList()
 })
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
+$primary-color: #1a5632;
+$primary-light: #2d7a4a;
+$primary-lighter: #e8f5ee;
+$accent-color: #c8953e;
+$accent-lighter: #fdf6e8;
+$text-color: #1a1a1a;
+$text-secondary: #5a5a5a;
+$bg-color: #f7f6f3;
+$bg-warm: #faf9f6;
+$card-bg: #ffffff;
+$border-color: #e8e5df;
+$border-light: #f0ede8;
+$shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+$shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04);
+$radius-sm: 6px;
+$radius-md: 10px;
+$font-display: 'Noto Serif SC', serif;
+$container-max: 1240px;
+$danger-color: #c0392b;
+$warning-color: #c8953e;
+
 .demand-list {
-  padding: 20px;
-  max-width: 960px;
+  max-width: $container-max;
   margin: 0 auto;
+  padding: 32px 24px;
+  background: $bg-color;
+  min-height: 100vh;
 }
 
-.filter-card {
-  margin-bottom: 16px;
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 28px;
+}
+
+.page-title {
+  h1 {
+    font-family: $font-display;
+    font-size: 28px;
+    font-weight: 700;
+    color: $text-color;
+    margin: 0;
+    padding-left: 16px;
+    border-left: 4px solid $primary-color;
+    line-height: 1.3;
+  }
+
+  .page-subtitle {
+    margin: 6px 0 0 16px;
+    font-size: 14px;
+    color: $text-secondary;
+  }
+}
+
+.publish-btn {
+  background: $primary-color;
+  border-color: $primary-color;
+  color: #fff;
+  font-size: 15px;
+  padding: 10px 24px;
+  border-radius: $radius-sm;
+  transition: all 0.25s ease;
+
+  &:hover,
+  &:focus {
+    background: $primary-light;
+    border-color: $primary-light;
+  }
+
+  .el-icon {
+    margin-right: 4px;
+  }
+}
+
+.filter-section {
+  background: $card-bg;
+  border-radius: $radius-md;
+  padding: 20px 24px;
+  margin-bottom: 24px;
+  box-shadow: $shadow-sm;
+  border: 1px solid $border-light;
 }
 
 .filter-form {
@@ -222,77 +318,180 @@ onMounted(() => {
 .demand-cards {
   min-height: 300px;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(440px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  gap: 20px;
 }
 
 .demand-card {
+  background: $card-bg;
+  border-radius: $radius-md;
+  border: 1px solid $border-color;
+  padding: 0;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  box-shadow: $shadow-sm;
   cursor: default;
-  transition: transform 0.2s;
+  display: flex;
+  flex-direction: column;
+
+  &:hover {
+    border-color: $accent-color;
+    box-shadow: $shadow-md, 0 0 0 1px rgba($accent-color, 0.15);
+    transform: translateY(-3px);
+  }
 }
 
-.demand-card:hover {
-  transform: translateY(-2px);
+.card-top {
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid $border-light;
+  background: $bg-warm;
 }
 
-.card-header {
+.card-title-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
 }
 
 .herb-name {
-  font-size: 16px;
+  font-family: $font-display;
+  font-size: 18px;
+  font-weight: 700;
+  color: $text-color;
+}
+
+.countdown-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
   font-weight: 600;
-  color: #303133;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
 }
 
-.card-body {
-  margin-bottom: 12px;
+.countdown-safe {
+  background: $primary-lighter;
+  color: $primary-color;
 }
 
-.info-row {
+.countdown-warning {
+  background: $accent-lighter;
+  color: $accent-color;
+}
+
+.countdown-urgent {
+  background: #fde8e8;
+  color: $danger-color;
+}
+
+.countdown-expired {
+  background: #f0ede8;
+  color: #999;
+}
+
+.card-info-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  padding: 16px 20px;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.info-label {
+  font-size: 12px;
+  color: $text-secondary;
+}
+
+.info-value {
+  font-size: 14px;
+  font-weight: 500;
+  color: $text-color;
+}
+
+.address-value {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.card-meta-row {
+  padding: 0 20px 12px;
+}
+
+.quote-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  background: $primary-lighter;
+  color: $primary-color;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+
+  .el-icon {
+    font-size: 13px;
+  }
+}
+
+.card-desc {
+  padding: 0 20px 16px;
   font-size: 13px;
-  color: #606266;
-  line-height: 1.8;
-}
-
-.info-row .label {
-  color: #909399;
-}
-
-.quote-count {
-  color: #409eff;
-  font-weight: 500;
-}
-
-.remaining-days {
-  color: #67c23a;
-  font-weight: 500;
-}
-
-.remaining-days.urgent {
-  color: #f56c6c;
+  color: $text-secondary;
+  line-height: 1.6;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .card-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 12px;
-  color: #c0c4cc;
-  border-top: 1px solid #f0f0f0;
-  padding-top: 10px;
+  padding: 12px 20px;
+  border-top: 1px solid $border-light;
+  margin-top: auto;
 }
 
 .publish-time {
-  color: #c0c4cc;
+  font-size: 12px;
+  color: #b0ada6;
+}
+
+.quote-btn {
+  background: $primary-color;
+  border-color: $primary-color;
+  color: #fff;
+  font-size: 14px;
+  padding: 8px 22px;
+  border-radius: $radius-sm;
+  transition: all 0.25s ease;
+
+  &:hover,
+  &:focus {
+    background: $primary-light;
+    border-color: $primary-light;
+  }
+
+  &.is-disabled {
+    background: #c0c4cc;
+    border-color: #c0c4cc;
+    cursor: not-allowed;
+  }
 }
 
 .pagination-wrapper {
   display: flex;
   justify-content: center;
-  margin-top: 20px;
+  margin-top: 32px;
+  padding-bottom: 16px;
 }
 </style>

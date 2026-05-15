@@ -1,41 +1,45 @@
 <template>
   <div class="origin-map-page">
-    <div class="origin-map-page__sidebar">
-      <el-card shadow="hover" class="origin-map-page__filter-card">
-        <template #header>
-          <span class="origin-map-page__filter-title">品种筛选</span>
-        </template>
-        <el-select
-          v-model="selectedCategory"
-          placeholder="选择品种分类"
-          clearable
-          style="width: 100%"
-          @change="handleCategoryChange"
-        >
-          <el-option
-            v-for="cat in categories"
-            :key="cat.value"
-            :label="cat.label"
-            :value="cat.value"
-          />
-        </el-select>
-        <div v-if="selectedCategory" class="origin-map-page__filter-info">
-          <el-tag type="info" size="small">当前：{{ selectedCategoryLabel }}</el-tag>
-        </div>
-        <el-divider />
-        <div class="origin-map-page__legend">
-          <div class="origin-map-page__legend-title">热力图图例</div>
-          <div class="origin-map-page__legend-bar" />
-          <div class="origin-map-page__legend-labels">
-            <span>跌</span>
-            <span>稳</span>
-            <span>涨</span>
+    <div class="origin-map-page__page-title">
+      <h2>产地价格热力图</h2>
+    </div>
+    <div class="origin-map-page__body">
+      <div class="origin-map-page__sidebar">
+        <div class="origin-map-page__filter-card">
+          <div class="origin-map-page__filter-header">
+            <span class="origin-map-page__filter-title">品种筛选</span>
+          </div>
+          <div class="origin-map-page__category-pills">
+            <button
+              v-for="cat in categories"
+              :key="cat.value"
+              class="origin-map-page__category-pill"
+              :class="{ 'origin-map-page__category-pill--active': selectedCategory === cat.value }"
+              @click="selectedCategory = selectedCategory === cat.value ? '' : cat.value; handleCategoryChange(selectedCategory)"
+            >
+              {{ cat.label }}
+            </button>
+          </div>
+          <div v-if="selectedCategory" class="origin-map-page__filter-info">
+            <span class="origin-map-page__filter-tag">当前：{{ selectedCategoryLabel }}</span>
+          </div>
+          <div class="origin-map-page__divider"></div>
+          <div class="origin-map-page__legend">
+            <div class="origin-map-page__legend-title">热力图图例</div>
+            <div class="origin-map-page__legend-bar">
+              <div class="origin-map-page__legend-bar-inner"></div>
+            </div>
+            <div class="origin-map-page__legend-labels">
+              <span class="origin-map-page__legend-label--down">跌</span>
+              <span class="origin-map-page__legend-label--stable">稳</span>
+              <span class="origin-map-page__legend-label--up">涨</span>
+            </div>
           </div>
         </div>
-      </el-card>
-    </div>
-    <div class="origin-map-page__map">
-      <OriginMap :heat-data="heatData" :show-heatmap="showHeatmap" />
+      </div>
+      <div class="origin-map-page__map">
+        <OriginMap :heat-data="heatData" :show-heatmap="showHeatmap" />
+      </div>
     </div>
   </div>
 </template>
@@ -158,37 +162,147 @@ async function handleCategoryChange(category: string) {
 @import '@/styles/variables.scss';
 
 .origin-map-page {
-  display: flex;
-  height: calc(100vh - #{$header-height} - 32px);
-  padding: 16px;
-  gap: 16px;
+  padding: 20px 16px;
+  max-width: $container-max;
+  margin: 0 auto;
+
+  &__page-title {
+    margin-bottom: 20px;
+
+    h2 {
+      margin: 0;
+      font-family: $font-display;
+      font-size: 22px;
+      font-weight: 600;
+      color: $text-color;
+      padding-left: 16px;
+      position: relative;
+
+      &::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 4px;
+        height: 24px;
+        background: $primary-color;
+        border-radius: 2px;
+      }
+    }
+  }
+
+  &__body {
+    display: flex;
+    height: calc(100vh - #{$header-height} - 120px);
+    gap: 20px;
+  }
 
   &__sidebar {
-    width: 260px;
+    width: 280px;
     flex-shrink: 0;
   }
 
   &__filter-card {
+    background: $card-bg;
+    border-radius: $radius-md;
+    box-shadow: $shadow-sm;
+    border: 1px solid $border-light;
+    padding: 20px;
     height: 100%;
+    overflow-y: auto;
+  }
 
-    :deep(.el-card__header) {
-      padding: 12px 20px;
-    }
+  &__filter-header {
+    margin-bottom: 16px;
   }
 
   &__filter-title {
+    font-family: $font-display;
     font-size: 16px;
     font-weight: 600;
     color: $text-color;
+    position: relative;
+    padding-left: 12px;
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 3px;
+      height: 16px;
+      background: $accent-color;
+      border-radius: 2px;
+    }
+  }
+
+  &__category-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  &__category-pill {
+    padding: 6px 14px;
+    border-radius: 18px;
+    border: 1px solid $border-color;
+    background: $bg-warm;
+    color: $text-secondary;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      border-color: $primary-light;
+      color: $primary-color;
+      background: $primary-lighter;
+    }
+
+    &--active {
+      background: $primary-color;
+      border-color: $primary-color;
+      color: #fff;
+      box-shadow: 0 1px 4px rgba($primary-color, 0.3);
+
+      &:hover {
+        background: $primary-light;
+        border-color: $primary-light;
+        color: #fff;
+      }
+    }
   }
 
   &__filter-info {
     margin-top: 12px;
   }
 
+  &__filter-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 12px;
+    border-radius: 14px;
+    background: $accent-lighter;
+    color: $accent-color;
+    font-size: 12px;
+    font-weight: 500;
+    border: 1px solid $accent-light;
+  }
+
+  &__divider {
+    height: 1px;
+    background: $border-light;
+    margin: 20px 0;
+  }
+
   &__map {
     flex: 1;
     min-width: 0;
+    border-radius: $radius-md;
+    overflow: hidden;
+    border: 1px solid $border-light;
+    box-shadow: $shadow-sm;
 
     .origin-map {
       height: 100%;
@@ -203,21 +317,60 @@ async function handleCategoryChange(category: string) {
     font-size: 14px;
     font-weight: 500;
     color: $text-color;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
   }
 
   &__legend-bar {
-    height: 12px;
-    border-radius: 6px;
-    background: linear-gradient(to right, #27ae60, #f39c12, #e74c3c);
+    height: 14px;
+    border-radius: 7px;
+    overflow: hidden;
+    background: $bg-warm;
+    border: 1px solid $border-light;
+  }
+
+  &__legend-bar-inner {
+    height: 100%;
+    border-radius: 7px;
+    background: linear-gradient(to right, $down-color, $accent-color, $up-color);
   }
 
   &__legend-labels {
     display: flex;
     justify-content: space-between;
     font-size: 12px;
-    color: $text-secondary;
-    margin-top: 4px;
+    margin-top: 6px;
+  }
+
+  &__legend-label--down {
+    color: $down-color;
+    font-weight: 500;
+  }
+
+  &__legend-label--stable {
+    color: $accent-color;
+    font-weight: 500;
+  }
+
+  &__legend-label--up {
+    color: $up-color;
+    font-weight: 500;
+  }
+}
+
+@media (max-width: 768px) {
+  .origin-map-page {
+    &__body {
+      flex-direction: column;
+      height: auto;
+    }
+
+    &__sidebar {
+      width: 100%;
+    }
+
+    &__map {
+      height: 400px;
+    }
   }
 }
 </style>

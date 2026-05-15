@@ -1,6 +1,17 @@
 <template>
   <div class="supply-list">
-    <el-card shadow="never" class="filter-card">
+    <div class="page-header">
+      <div class="page-title">
+        <h1>供应信息</h1>
+        <p class="page-subtitle">优质中药材供应，源头直供品质保障</p>
+      </div>
+      <el-button class="publish-btn" @click="router.push('/supply/publish')">
+        <el-icon><Plus /></el-icon>
+        发布供应
+      </el-button>
+    </div>
+
+    <div class="filter-section">
       <el-form :inline="true" :model="filters" class="filter-form">
         <el-form-item label="品种">
           <el-input
@@ -46,58 +57,64 @@
           <el-button @click="resetFilters">重置</el-button>
         </el-form-item>
       </el-form>
-    </el-card>
+    </div>
 
     <div v-loading="loading" class="supply-cards">
       <el-empty v-if="!loading && supplyList.length === 0" description="暂无供应信息" />
-      <el-card
+      <div
         v-for="item in supplyList"
         :key="item.id"
-        shadow="hover"
         class="supply-card"
       >
-        <div class="card-header">
-          <span class="herb-name">{{ item.herbName }}</span>
-          <el-tag size="small" :type="getPriceTypeTag(item.priceType)">
-            {{ getPriceTypeLabel(item.priceType) }}
-          </el-tag>
-        </div>
-        <div class="card-body">
-          <div class="info-row">
-            <span class="label">规格：</span>
-            <span>{{ item.spec || '-' }}</span>
-          </div>
-          <div class="info-row">
-            <span class="label">产地：</span>
-            <span>{{ item.origin || '-' }}</span>
-          </div>
-          <div class="info-row">
-            <span class="label">数量：</span>
-            <span>{{ item.quantity }}{{ item.unit }}</span>
-          </div>
-          <div class="info-row">
-            <span class="label">价格：</span>
-            <span v-if="getPriceTypeLabel(item.priceType) === '明码'" class="price-value">
-              ¥{{ item.price }}/{{ item.unit }}
+        <div class="card-top">
+          <div class="card-title-row">
+            <span class="herb-name">{{ item.herbName }}</span>
+            <span
+              :class="['price-type-badge', getPriceTypeLabel(item.priceType) === '明码' ? 'badge-explicit' : 'badge-negotiate']"
+            >
+              {{ getPriceTypeLabel(item.priceType) }}
             </span>
-            <span v-else class="price-negotiable">电议</span>
           </div>
-          <div v-if="item.description" class="info-row">
-            <span class="label">说明：</span>
-            <span>{{ item.description }}</span>
+          <div class="card-price-row">
+            <span v-if="getPriceTypeLabel(item.priceType) === '明码'" class="price-explicit">
+              ¥{{ item.price }}<span class="price-unit">/{{ item.unit }}</span>
+            </span>
+            <span v-else class="price-negotiate-badge">电议</span>
           </div>
         </div>
+
+        <div class="card-info-grid">
+          <div class="info-item">
+            <span class="info-label">规格</span>
+            <span class="info-value">{{ item.spec || '-' }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">产地</span>
+            <span class="info-value">{{ item.origin || '-' }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">数量</span>
+            <span class="info-value">{{ item.quantity }}{{ item.unit }}</span>
+          </div>
+        </div>
+
+        <div v-if="item.description" class="card-desc">
+          {{ item.description }}
+        </div>
+
         <div class="card-footer">
           <span class="publish-time">{{ item.createdAt || item.publishTime }}</span>
-          <span v-if="userStore.token" class="contact-info">
-            <el-icon><Phone /></el-icon>
-            {{ item.contactPhone }}
-          </span>
-          <el-button v-else type="primary" size="small" @click="goLogin">
-            登录后查看
-          </el-button>
+          <div class="contact-area">
+            <span v-if="userStore.token" class="contact-info">
+              <el-icon><Phone /></el-icon>
+              {{ item.contactPhone }}
+            </span>
+            <el-button v-else type="primary" size="small" class="login-btn" @click="goLogin">
+              登录后查看
+            </el-button>
+          </div>
         </div>
-      </el-card>
+      </div>
     </div>
 
     <div class="pagination-wrapper">
@@ -214,15 +231,89 @@ onMounted(() => {
 })
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
+$primary-color: #1a5632;
+$primary-light: #2d7a4a;
+$primary-lighter: #e8f5ee;
+$accent-color: #c8953e;
+$accent-lighter: #fdf6e8;
+$text-color: #1a1a1a;
+$text-secondary: #5a5a5a;
+$bg-color: #f7f6f3;
+$bg-warm: #faf9f6;
+$card-bg: #ffffff;
+$border-color: #e8e5df;
+$border-light: #f0ede8;
+$shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+$shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04);
+$radius-sm: 6px;
+$radius-md: 10px;
+$font-display: 'Noto Serif SC', serif;
+$container-max: 1240px;
+$danger-color: #c0392b;
+$warning-color: #c8953e;
+
 .supply-list {
-  padding: 20px;
-  max-width: 960px;
+  max-width: $container-max;
   margin: 0 auto;
+  padding: 32px 24px;
+  background: $bg-color;
+  min-height: 100vh;
 }
 
-.filter-card {
-  margin-bottom: 16px;
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 28px;
+}
+
+.page-title {
+  h1 {
+    font-family: $font-display;
+    font-size: 28px;
+    font-weight: 700;
+    color: $text-color;
+    margin: 0;
+    padding-left: 16px;
+    border-left: 4px solid $primary-color;
+    line-height: 1.3;
+  }
+
+  .page-subtitle {
+    margin: 6px 0 0 16px;
+    font-size: 14px;
+    color: $text-secondary;
+  }
+}
+
+.publish-btn {
+  background: $primary-color;
+  border-color: $primary-color;
+  color: #fff;
+  font-size: 15px;
+  padding: 10px 24px;
+  border-radius: $radius-sm;
+  transition: all 0.25s ease;
+
+  &:hover,
+  &:focus {
+    background: $primary-light;
+    border-color: $primary-light;
+  }
+
+  .el-icon {
+    margin-right: 4px;
+  }
+}
+
+.filter-section {
+  background: $card-bg;
+  border-radius: $radius-md;
+  padding: 20px 24px;
+  margin-bottom: 24px;
+  box-shadow: $shadow-sm;
+  border: 1px solid $border-light;
 }
 
 .filter-form {
@@ -234,77 +325,173 @@ onMounted(() => {
 .supply-cards {
   min-height: 300px;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(440px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  gap: 20px;
 }
 
 .supply-card {
+  background: $card-bg;
+  border-radius: $radius-md;
+  border: 1px solid $border-color;
+  padding: 0;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  box-shadow: $shadow-sm;
   cursor: default;
-  transition: transform 0.2s;
+  display: flex;
+  flex-direction: column;
+
+  &:hover {
+    border-color: $accent-color;
+    box-shadow: $shadow-md, 0 0 0 1px rgba($accent-color, 0.15);
+    transform: translateY(-3px);
+  }
 }
 
-.supply-card:hover {
-  transform: translateY(-2px);
+.card-top {
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid $border-light;
+  background: $bg-warm;
 }
 
-.card-header {
+.card-title-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 .herb-name {
-  font-size: 16px;
+  font-family: $font-display;
+  font-size: 18px;
+  font-weight: 700;
+  color: $text-color;
+}
+
+.price-type-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 12px;
   font-weight: 600;
-  color: #303133;
+  letter-spacing: 0.5px;
 }
 
-.card-body {
-  margin-bottom: 12px;
+.badge-explicit {
+  background: $primary-lighter;
+  color: $primary-color;
 }
 
-.info-row {
+.badge-negotiate {
+  background: $accent-lighter;
+  color: $accent-color;
+}
+
+.card-price-row {
+  display: flex;
+  align-items: baseline;
+}
+
+.price-explicit {
+  font-family: $font-display;
+  font-size: 26px;
+  font-weight: 700;
+  color: $accent-color;
+  line-height: 1.2;
+
+  .price-unit {
+    font-size: 13px;
+    font-weight: 400;
+    color: $text-secondary;
+  }
+}
+
+.price-negotiate-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 14px;
+  background: $accent-lighter;
+  color: $accent-color;
+  border-radius: $radius-sm;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.card-info-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  padding: 16px 20px;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.info-label {
+  font-size: 12px;
+  color: $text-secondary;
+}
+
+.info-value {
+  font-size: 14px;
+  font-weight: 500;
+  color: $text-color;
+}
+
+.card-desc {
+  padding: 0 20px 16px;
   font-size: 13px;
-  color: #606266;
-  line-height: 1.8;
-}
-
-.info-row .label {
-  color: #909399;
-}
-
-.price-value {
-  color: #e6a23c;
-  font-weight: 600;
-}
-
-.price-negotiable {
-  color: #e6a23c;
-  font-style: italic;
+  color: $text-secondary;
+  line-height: 1.6;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .card-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 12px 20px;
+  border-top: 1px solid $border-light;
+  margin-top: auto;
+}
+
+.publish-time {
   font-size: 12px;
-  color: #c0c4cc;
-  border-top: 1px solid #f0f0f0;
-  padding-top: 10px;
+  color: #b0ada6;
+}
+
+.contact-area {
+  display: flex;
+  align-items: center;
 }
 
 .contact-info {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 4px;
-  color: #67c23a;
+  color: $primary-color;
   font-size: 13px;
+  font-weight: 500;
+}
+
+.login-btn {
+  --el-button-bg-color: #{$primary-color};
+  --el-button-border-color: #{$primary-color};
+  --el-button-hover-bg-color: #{$primary-light};
+  --el-button-hover-border-color: #{$primary-light};
 }
 
 .pagination-wrapper {
   display: flex;
   justify-content: center;
-  margin-top: 20px;
+  margin-top: 32px;
+  padding-bottom: 16px;
 }
 </style>

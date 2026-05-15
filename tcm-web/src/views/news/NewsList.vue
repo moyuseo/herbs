@@ -1,23 +1,57 @@
 <template>
   <div class="news-list">
-    <el-tabs v-model="activeCategory" @tab-change="handleCategoryChange">
-      <el-tab-pane label="全部" name="" />
-      <el-tab-pane label="品种分析" name="品种分析" />
-      <el-tab-pane label="药市动态" name="药市动态" />
-      <el-tab-pane label="集采资讯" name="集采资讯" />
-      <el-tab-pane label="采购招标" name="采购招标" />
-    </el-tabs>
+    <div class="page-header">
+      <h1 class="page-title">资讯中心</h1>
+      <p class="page-subtitle">洞察中药材市场动态，把握行业前沿资讯</p>
+    </div>
+
+    <div class="category-filter">
+      <button
+        class="filter-pill"
+        :class="{ active: activeCategory === '' }"
+        @click="activeCategory = ''; handleCategoryChange()"
+      >
+        全部
+      </button>
+      <button
+        class="filter-pill"
+        :class="{ active: activeCategory === '品种分析' }"
+        @click="activeCategory = '品种分析'; handleCategoryChange()"
+      >
+        品种分析
+      </button>
+      <button
+        class="filter-pill"
+        :class="{ active: activeCategory === '药市动态' }"
+        @click="activeCategory = '药市动态'; handleCategoryChange()"
+      >
+        药市动态
+      </button>
+      <button
+        class="filter-pill"
+        :class="{ active: activeCategory === '集采资讯' }"
+        @click="activeCategory = '集采资讯'; handleCategoryChange()"
+      >
+        集采资讯
+      </button>
+      <button
+        class="filter-pill"
+        :class="{ active: activeCategory === '采购招标' }"
+        @click="activeCategory = '采购招标'; handleCategoryChange()"
+      >
+        采购招标
+      </button>
+    </div>
 
     <div v-loading="loading" class="news-cards">
       <el-empty v-if="!loading && newsList.length === 0" description="暂无资讯" />
-      <el-card
+      <div
         v-for="item in newsList"
         :key="item.id"
-        shadow="hover"
         class="news-card"
         @click="goDetail(item.id)"
       >
-        <div class="card-body">
+        <div class="card-cover">
           <el-image
             :src="item.coverImage || item.coverUrl || defaultCover"
             fit="cover"
@@ -25,24 +59,29 @@
           >
             <template #error>
               <div class="image-placeholder">
-                <el-icon :size="24"><Picture /></el-icon>
+                <el-icon :size="28"><Picture /></el-icon>
               </div>
             </template>
           </el-image>
-          <div class="card-info">
-            <h3 class="title">{{ item.title }}</h3>
-            <p class="summary">{{ item.summary }}</p>
-            <div class="meta">
-              <el-tag size="small" type="info">{{ item.category }}</el-tag>
-              <span class="publish-time">{{ item.publishedAt || item.publishTime }}</span>
-              <span class="read-count">
-                <el-icon><View /></el-icon>
-                {{ item.viewCount ?? item.readCount ?? 0 }}
-              </span>
-            </div>
+        </div>
+        <div class="card-content">
+          <h3 class="card-title">{{ item.title }}</h3>
+          <p class="card-summary">{{ item.summary }}</p>
+          <div class="card-meta">
+            <span class="meta-category">
+              <el-tag size="small" effect="plain" round>{{ item.category }}</el-tag>
+            </span>
+            <span class="meta-date">
+              <el-icon><Clock /></el-icon>
+              {{ item.publishedAt || item.publishTime }}
+            </span>
+            <span class="meta-views">
+              <el-icon><View /></el-icon>
+              {{ item.viewCount ?? item.readCount ?? 0 }}
+            </span>
           </div>
         </div>
-      </el-card>
+      </div>
     </div>
 
     <div class="pagination-wrapper">
@@ -122,11 +161,99 @@ onMounted(() => {
 })
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
+$primary-color: #1a5632;
+$primary-light: #2d7a4a;
+$primary-lighter: #e8f5ee;
+$accent-color: #c8953e;
+$accent-lighter: #fdf6e8;
+$text-color: #1a1a1a;
+$text-secondary: #5a5a5a;
+$bg-color: #f7f6f3;
+$bg-warm: #faf9f6;
+$card-bg: #ffffff;
+$border-color: #e8e5df;
+$border-light: #f0ede8;
+$shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
+$shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+$radius-sm: 6px;
+$radius-md: 10px;
+$font-display: 'Noto Serif SC', serif;
+$container-max: 1240px;
+
 .news-list {
-  padding: 20px;
-  max-width: 960px;
+  max-width: $container-max;
   margin: 0 auto;
+  padding: 32px 24px 48px;
+  background: $bg-color;
+  min-height: 100vh;
+}
+
+.page-header {
+  margin-bottom: 28px;
+}
+
+.page-title {
+  font-family: $font-display;
+  font-size: 28px;
+  font-weight: 700;
+  color: $text-color;
+  margin: 0 0 8px;
+  padding-left: 16px;
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 4px;
+    bottom: 4px;
+    width: 4px;
+    background: $primary-color;
+    border-radius: 2px;
+  }
+}
+
+.page-subtitle {
+  font-size: 14px;
+  color: $text-secondary;
+  margin: 0;
+  padding-left: 16px;
+}
+
+.category-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.filter-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 20px;
+  font-size: 14px;
+  color: $text-secondary;
+  background: $card-bg;
+  border: 1px solid $border-color;
+  border-radius: 24px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  font-family: inherit;
+  line-height: 1;
+
+  &:hover {
+    color: $primary-color;
+    border-color: $primary-light;
+    background: $primary-lighter;
+  }
+
+  &.active {
+    color: #fff;
+    background: $primary-color;
+    border-color: $primary-color;
+    box-shadow: 0 2px 8px rgba($primary-color, 0.3);
+  }
 }
 
 .news-cards {
@@ -134,39 +261,63 @@ onMounted(() => {
 }
 
 .news-card {
-  margin-bottom: 12px;
-  cursor: pointer;
-  transition: transform 0.2s;
-}
-
-.news-card:hover {
-  transform: translateY(-2px);
-}
-
-.card-body {
   display: flex;
-  gap: 16px;
+  gap: 20px;
+  background: $card-bg;
+  border: 1px solid $border-light;
+  border-radius: $radius-md;
+  padding: 20px;
+  margin-bottom: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: $shadow-sm;
+
+  &:hover {
+    box-shadow: $shadow-md;
+    border-color: rgba($accent-color, 0.4);
+    transform: translateY(-2px);
+
+    .card-title {
+      color: $primary-color;
+    }
+
+    .cover-img {
+      :deep(img) {
+        transform: scale(1.05);
+      }
+    }
+  }
 }
 
-.cover-img {
-  width: 120px;
-  height: 90px;
+.card-cover {
+  width: 200px;
+  height: 140px;
   flex-shrink: 0;
-  border-radius: 4px;
+  border-radius: $radius-sm;
   overflow: hidden;
+
+  .cover-img {
+    width: 100%;
+    height: 100%;
+    border-radius: $radius-sm;
+
+    :deep(img) {
+      transition: transform 0.4s ease;
+    }
+  }
 }
 
 .image-placeholder {
-  width: 120px;
-  height: 90px;
+  width: 100%;
+  height: 140px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f5f7fa;
-  color: #c0c4cc;
+  background: $primary-lighter;
+  color: $primary-light;
 }
 
-.card-info {
+.card-content {
   flex: 1;
   min-width: 0;
   display: flex;
@@ -174,20 +325,22 @@ onMounted(() => {
   justify-content: space-between;
 }
 
-.title {
-  font-size: 16px;
+.card-title {
+  font-size: 17px;
   font-weight: 600;
-  color: #303133;
-  margin: 0 0 8px;
+  color: $text-color;
+  margin: 0 0 10px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  transition: color 0.25s ease;
 }
 
-.summary {
-  font-size: 13px;
-  color: #909399;
-  margin: 0 0 8px;
+.card-summary {
+  font-size: 14px;
+  color: $text-secondary;
+  margin: 0 0 14px;
+  line-height: 1.7;
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
@@ -195,23 +348,76 @@ onMounted(() => {
   -webkit-box-orient: vertical;
 }
 
-.meta {
+.card-meta {
   display: flex;
   align-items: center;
-  gap: 12px;
-  font-size: 12px;
-  color: #c0c4cc;
+  gap: 16px;
+  font-size: 13px;
+  color: $text-secondary;
 }
 
-.read-count {
-  display: flex;
+.meta-category {
+  :deep(.el-tag) {
+    background: $primary-lighter;
+    color: $primary-color;
+    border-color: transparent;
+  }
+}
+
+.meta-date,
+.meta-views {
+  display: inline-flex;
   align-items: center;
-  gap: 2px;
+  gap: 4px;
+
+  .el-icon {
+    font-size: 14px;
+    color: $accent-color;
+  }
 }
 
 .pagination-wrapper {
   display: flex;
   justify-content: center;
-  margin-top: 20px;
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid $border-light;
+
+  :deep(.el-pagination) {
+    .el-pager li.is-active {
+      background: $primary-color;
+      color: #fff;
+    }
+
+    button:hover,
+    .el-pager li:hover {
+      color: $primary-color;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .news-list {
+    padding: 20px 16px 36px;
+  }
+
+  .page-title {
+    font-size: 22px;
+  }
+
+  .news-card {
+    flex-direction: column;
+    gap: 14px;
+    padding: 16px;
+  }
+
+  .card-cover {
+    width: 100%;
+    height: 180px;
+  }
+
+  .image-placeholder {
+    height: 180px;
+  }
 }
 </style>

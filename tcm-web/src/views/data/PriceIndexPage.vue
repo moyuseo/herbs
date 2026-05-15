@@ -1,6 +1,7 @@
 <template>
   <div class="price-index">
-    <el-card shadow="hover" class="price-index__hero">
+    <div class="price-index__hero">
+      <div class="price-index__hero-bg"></div>
       <div class="price-index__hero-inner">
         <div class="price-index__hero-left">
           <div class="price-index__hero-label">{{ currentTypeName }}</div>
@@ -13,62 +14,57 @@
           </div>
         </div>
         <div class="price-index__hero-right">
-          <el-tabs v-model="activeType" @tab-change="handleTypeChange">
-            <el-tab-pane
+          <div class="price-index__type-pills">
+            <button
               v-for="t in indexTypes"
               :key="t.value"
-              :label="t.label"
-              :name="t.value"
-            />
-          </el-tabs>
+              class="price-index__type-pill"
+              :class="{ 'price-index__type-pill--active': activeType === t.value }"
+              @click="activeType = t.value; handleTypeChange()"
+            >
+              {{ t.label }}
+            </button>
+          </div>
         </div>
       </div>
-    </el-card>
+    </div>
 
-    <el-card shadow="hover" class="price-index__chart-card">
-      <template #header>
-        <div class="price-index__chart-header">
-          <span class="price-index__chart-title">指数走势</span>
-          <el-radio-group v-model="activePeriod" size="small" @change="fetchData">
-            <el-radio-button value="month">近1月</el-radio-button>
-            <el-radio-button value="3month">近3月</el-radio-button>
-            <el-radio-button value="6month">近6月</el-radio-button>
-            <el-radio-button value="year">近1年</el-radio-button>
-          </el-radio-group>
+    <div class="price-index__chart-card">
+      <div class="price-index__chart-header">
+        <span class="price-index__chart-title">指数走势</span>
+        <div class="price-index__period-pills">
+          <button
+            v-for="p in periods"
+            :key="p.value"
+            class="price-index__period-pill"
+            :class="{ 'price-index__period-pill--active': activePeriod === p.value }"
+            @click="activePeriod = p.value; fetchData()"
+          >
+            {{ p.label }}
+          </button>
         </div>
-      </template>
+      </div>
       <div v-if="historyData.dates?.length" ref="chartRef" class="price-index__chart" />
       <el-empty v-else description="暂无指数数据" :image-size="100" />
-    </el-card>
+    </div>
 
-    <el-card shadow="hover" class="price-index__info-card">
-      <template #header>
+    <div class="price-index__info-card">
+      <div class="price-index__info-header">
         <span class="price-index__info-title">指数构成说明</span>
-      </template>
+      </div>
       <div class="price-index__info-content">
-        <el-descriptions :column="1" border>
-          <el-descriptions-item label="综合指数">
-            反映中药材市场整体价格变动趋势的综合指数，以主要大宗中药材品种为样本，按加权平均法计算。
-          </el-descriptions-item>
-          <el-descriptions-item label="根茎类指数">
-            以三七、白芍、当归、黄芪、甘草、地黄、人参、川芎、柴胡、桔梗等根茎类药材为样本编制。
-          </el-descriptions-item>
-          <el-descriptions-item label="果实类指数">
-            以枸杞子、陈皮、连翘、五味子等果实种子类药材为样本编制。
-          </el-descriptions-item>
-          <el-descriptions-item label="花类指数">
-            以金银花、菊花、红花等花类药材为样本编制。
-          </el-descriptions-item>
-          <el-descriptions-item label="全草类指数">
-            以薄荷、藿香等全草类药材为样本编制。
-          </el-descriptions-item>
-        </el-descriptions>
+        <div class="price-index__info-list">
+          <div class="price-index__info-item" v-for="item in indexDescriptions" :key="item.label">
+            <div class="price-index__info-label">{{ item.label }}</div>
+            <div class="price-index__info-desc">{{ item.desc }}</div>
+          </div>
+        </div>
         <div class="price-index__info-note">
           <el-icon><InfoFilled /></el-icon>
           <span>指数基期定为 2024年1月1日，基期指数为 1000 点。数据每日更新，仅供参考，不构成投资建议。</span>
         </div>
       </div>
-    </el-card>
+    </div>
   </div>
 </template>
 
@@ -83,6 +79,21 @@ const indexTypes = [
   { value: 'fruit', label: '果实类' },
   { value: 'flower', label: '花类' },
   { value: 'herb', label: '全草类' },
+]
+
+const periods = [
+  { value: 'month', label: '近1月' },
+  { value: '3month', label: '近3月' },
+  { value: '6month', label: '近6月' },
+  { value: 'year', label: '近1年' },
+]
+
+const indexDescriptions = [
+  { label: '综合指数', desc: '反映中药材市场整体价格变动趋势的综合指数，以主要大宗中药材品种为样本，按加权平均法计算。' },
+  { label: '根茎类指数', desc: '以三七、白芍、当归、黄芪、甘草、地黄、人参、川芎、柴胡、桔梗等根茎类药材为样本编制。' },
+  { label: '果实类指数', desc: '以枸杞子、陈皮、连翘、五味子等果实种子类药材为样本编制。' },
+  { label: '花类指数', desc: '以金银花、菊花、红花等花类药材为样本编制。' },
+  { label: '全草类指数', desc: '以薄荷、藿香等全草类药材为样本编制。' },
 ]
 
 const activeType = ref('composite')
@@ -259,23 +270,40 @@ onUnmounted(() => {
 @import '@/styles/variables.scss';
 
 .price-index {
-  max-width: 1200px;
+  max-width: $container-max;
   margin: 0 auto;
-  padding: 16px;
+  padding: 20px 16px;
 
   &__hero {
-    margin-bottom: 16px;
+    position: relative;
+    border-radius: $radius-lg;
+    overflow: hidden;
+    margin-bottom: 20px;
+    padding: 36px 40px;
+    color: #fff;
+  }
 
-    :deep(.el-card__body) {
-      padding: 24px 32px;
+  &__hero-bg {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, $primary-dark 0%, $primary-color 50%, $primary-light 100%);
+    z-index: 0;
+
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
     }
   }
 
   &__hero-inner {
+    position: relative;
+    z-index: 1;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 24px;
+    gap: 32px;
   }
 
   &__hero-left {
@@ -284,16 +312,19 @@ onUnmounted(() => {
 
   &__hero-label {
     font-size: 14px;
-    color: $text-secondary;
+    color: rgba(255, 255, 255, 0.75);
     margin-bottom: 8px;
+    letter-spacing: 1px;
   }
 
   &__hero-value {
-    font-size: 42px;
+    font-family: $font-display;
+    font-size: 52px;
     font-weight: 700;
-    color: $text-color;
-    line-height: 1.2;
+    color: #fff;
+    line-height: 1.1;
     letter-spacing: -1px;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   }
 
   &__hero-change {
@@ -302,57 +333,135 @@ onUnmounted(() => {
     gap: 4px;
     font-size: 16px;
     font-weight: 600;
-    margin-top: 8px;
-    padding: 2px 10px;
-    border-radius: 4px;
+    margin-top: 10px;
+    padding: 4px 14px;
+    border-radius: 20px;
 
     &--up {
-      color: #e74c3c;
-      background: rgba(231, 76, 60, 0.08);
+      color: #ffd6d6;
+      background: rgba(255, 255, 255, 0.15);
     }
 
     &--down {
-      color: #27ae60;
-      background: rgba(39, 174, 96, 0.08);
+      color: #c8f7d5;
+      background: rgba(255, 255, 255, 0.15);
     }
   }
 
   &__hero-right {
     flex: 1;
     min-width: 0;
+    display: flex;
+    justify-content: flex-end;
+  }
 
-    :deep(.el-tabs__header) {
-      margin-bottom: 0;
+  &__type-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: flex-end;
+  }
+
+  &__type-pill {
+    padding: 8px 20px;
+    border-radius: 24px;
+    border: 1.5px solid rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    backdrop-filter: blur(4px);
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.18);
+      border-color: rgba(255, 255, 255, 0.5);
     }
 
-    :deep(.el-tabs__nav-wrap::after) {
-      display: none;
-    }
+    &--active {
+      background: $accent-color;
+      border-color: $accent-color;
+      color: #fff;
+      box-shadow: 0 2px 8px rgba($accent-color, 0.4);
 
-    :deep(.el-tabs__item) {
-      font-size: 14px;
-      font-weight: 500;
+      &:hover {
+        background: darken(#c8953e, 5%);
+        border-color: darken(#c8953e, 5%);
+      }
     }
   }
 
   &__chart-card {
-    margin-bottom: 16px;
-
-    :deep(.el-card__header) {
-      padding: 12px 20px;
-    }
+    background: $card-bg;
+    border-radius: $radius-md;
+    box-shadow: $shadow-md;
+    padding: 24px;
+    margin-bottom: 20px;
+    border: 1px solid $border-light;
   }
 
   &__chart-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    margin-bottom: 20px;
   }
 
   &__chart-title {
-    font-size: 16px;
+    font-family: $font-display;
+    font-size: 18px;
     font-weight: 600;
     color: $text-color;
+    position: relative;
+    padding-left: 14px;
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 4px;
+      height: 20px;
+      background: $primary-color;
+      border-radius: 2px;
+    }
+  }
+
+  &__period-pills {
+    display: flex;
+    gap: 6px;
+    background: $bg-warm;
+    padding: 3px;
+    border-radius: 22px;
+    border: 1px solid $border-light;
+  }
+
+  &__period-pill {
+    padding: 6px 16px;
+    border-radius: 18px;
+    border: none;
+    background: transparent;
+    color: $text-secondary;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      color: $primary-color;
+    }
+
+    &--active {
+      background: $primary-color;
+      color: #fff;
+      box-shadow: 0 1px 4px rgba($primary-color, 0.3);
+
+      &:hover {
+        color: #fff;
+      }
+    }
   }
 
   &__chart {
@@ -361,35 +470,89 @@ onUnmounted(() => {
   }
 
   &__info-card {
-    :deep(.el-card__header) {
-      padding: 12px 20px;
-    }
+    background: $card-bg;
+    border-radius: $radius-md;
+    box-shadow: $shadow-sm;
+    border: 1px solid $border-light;
+    overflow: hidden;
+  }
+
+  &__info-header {
+    padding: 16px 24px;
+    border-bottom: 1px solid $border-light;
+    background: $bg-warm;
   }
 
   &__info-title {
-    font-size: 16px;
+    font-family: $font-display;
+    font-size: 18px;
     font-weight: 600;
     color: $text-color;
+    position: relative;
+    padding-left: 14px;
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 4px;
+      height: 20px;
+      background: $accent-color;
+      border-radius: 2px;
+    }
   }
 
   &__info-content {
-    :deep(.el-descriptions__label) {
-      width: 120px;
-      font-weight: 600;
-      color: $text-color;
+    padding: 20px 24px;
+  }
+
+  &__info-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  &__info-item {
+    display: flex;
+    gap: 16px;
+    padding: 14px 0;
+    border-bottom: 1px solid $border-light;
+
+    &:last-child {
+      border-bottom: none;
     }
+  }
+
+  &__info-label {
+    flex-shrink: 0;
+    width: 100px;
+    font-weight: 600;
+    font-size: 14px;
+    color: $primary-color;
+    padding: 4px 0;
+    border-left: 3px solid $accent-color;
+    padding-left: 12px;
+  }
+
+  &__info-desc {
+    font-size: 14px;
+    color: $text-secondary;
+    line-height: 1.7;
   }
 
   &__info-note {
     display: flex;
     align-items: flex-start;
-    gap: 6px;
+    gap: 8px;
     margin-top: 16px;
-    padding: 12px;
-    background: #fdf6ec;
-    border-radius: 6px;
+    padding: 14px 16px;
+    background: $accent-lighter;
+    border-radius: $radius-sm;
+    border-left: 3px solid $accent-color;
     font-size: 13px;
-    color: #e6a23c;
+    color: $accent-color;
     line-height: 1.6;
 
     .el-icon {
@@ -401,17 +564,50 @@ onUnmounted(() => {
 
 @media (max-width: 768px) {
   .price-index {
+    &__hero {
+      padding: 24px 20px;
+    }
+
     &__hero-inner {
       flex-direction: column;
       align-items: flex-start;
     }
 
     &__hero-value {
-      font-size: 32px;
+      font-size: 36px;
+    }
+
+    &__hero-right {
+      width: 100%;
+    }
+
+    &__type-pills {
+      justify-content: flex-start;
+    }
+
+    &__type-pill {
+      padding: 6px 14px;
+      font-size: 13px;
     }
 
     &__chart {
       height: 280px;
+    }
+
+    &__chart-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    &__info-item {
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    &__info-label {
+      border-left: none;
+      padding-left: 0;
     }
   }
 }
