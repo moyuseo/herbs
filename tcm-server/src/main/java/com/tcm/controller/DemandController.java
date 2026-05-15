@@ -10,6 +10,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/demand")
 @Tag(name = "求购信息")
@@ -32,5 +34,15 @@ public class DemandController {
     public Result<Long> publishDemand(@RequestBody DemandPublishDTO dto,
                                       @RequestHeader(value = "X-User-Id", defaultValue = "1") Long userId) {
         return Result.success(demandService.publishDemand(dto, userId));
+    }
+
+    @GetMapping("/user")
+    @Operation(summary = "用户的求购列表")
+    public Result<List<DemandVO>> getUserDemandList(@RequestHeader(value = "X-User-Id", defaultValue = "1") Long userId) {
+        DemandQueryDTO dto = new DemandQueryDTO();
+        dto.setPage(1);
+        dto.setPageSize(50);
+        PageResult<DemandVO> result = demandService.getDemandList(dto);
+        return Result.success(result.getList());
     }
 }

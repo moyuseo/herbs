@@ -213,7 +213,7 @@ async function fetchSupplyList() {
   if (!userStore.token) return
   supplyLoading.value = true
   try {
-    const res = (await request.get('/user/supply')) as any
+    const res = (await request.get('/supply/user')) as any
     supplyList.value = res?.list || res?.data || res?.records || (Array.isArray(res) ? res : [])
   } catch {
     supplyList.value = []
@@ -226,7 +226,7 @@ async function fetchDemandList() {
   if (!userStore.token) return
   demandLoading.value = true
   try {
-    const res = (await request.get('/user/demand')) as any
+    const res = (await request.get('/demand/user')) as any
     demandList.value = res?.list || res?.data || res?.records || (Array.isArray(res) ? res : [])
   } catch {
     demandList.value = []
@@ -241,7 +241,7 @@ function handleEditSupply(row: SupplyItem) {
 
 async function handleDeleteSupply(row: SupplyItem) {
   try {
-    await request.delete(`/supply/${row.id}`)
+    await request.delete(`/supply/delete/${row.id}`)
     ElMessage.success('删除成功')
     supplyList.value = supplyList.value.filter((s) => s.id !== row.id)
   } catch {

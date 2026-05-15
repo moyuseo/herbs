@@ -260,7 +260,7 @@ async function handleSupplySubmit() {
       origin: supplyForm.origin,
       quantity: supplyForm.quantity,
       unit: supplyForm.unit,
-      priceType: supplyForm.priceType,
+      priceType: supplyForm.priceType === '明码' ? 1 : 2,
       price: supplyForm.priceType === '明码' ? supplyForm.price : null,
       contactName: supplyForm.contactName,
       contactPhone: supplyForm.contactPhone,

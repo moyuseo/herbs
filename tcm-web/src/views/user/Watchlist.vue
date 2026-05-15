@@ -80,6 +80,7 @@ const router = useRouter()
 const userStore = useUserStore()
 
 interface WatchItem {
+  id: number | string
   herbId: number | string
   herbName: string
   currentPrice: number | null
@@ -105,7 +106,7 @@ async function fetchWatchList() {
 
 async function handleUnwatch(item: WatchItem) {
   try {
-    await request.delete(`/user/watchlist/${item.herbId}`)
+    await request.delete(`/user/watchlist/${item.id}`)
     ElMessage.success('已取消关注')
     watchList.value = watchList.value.filter((w) => w.herbId !== item.herbId)
   } catch {
